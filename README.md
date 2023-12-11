@@ -1,4 +1,4 @@
-# MorNooNight
+# DawNooNight
 
 User roles:
 1. Admin(one for the system, presetted) - managing users and resources* in the app
@@ -14,8 +14,22 @@ User roles:
 
 
 ![image](https://github.com/viktoriyageorge/MorNooNight/assets/73623633/efa62d5a-215d-48a4-a6aa-8f82695c1eed)
-
 authorities/roles - ROLE_ADMIN, ROLE_USER, ROLE_PREMIUM
+
+Requirements related to user:
+
+**Req1** As a user, I should be able to log in by username and password(for all roles)
+
+**Req2** As a user, I should be able to register with ROLE_USER by providing the information from the User diagram
+
+**Req3** As a user, I should be able to set my PIN. 
+
+**Req4** As a user, I should be able to change my PIN by providing the old and the new one. 
+
+**Req5** As a user, I should be able to log in with username and pin(//enhancing spring security with pin functionality)
+
+
+
  
 *Note: Brief example for implementing roles with Spring Security*
 
