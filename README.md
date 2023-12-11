@@ -14,6 +14,8 @@ User roles:
 
 
 ![image](https://github.com/viktoriyageorge/MorNooNight/assets/73623633/efa62d5a-215d-48a4-a6aa-8f82695c1eed)
+
+authorities/roles - ROLE_ADMIN, ROLE_USER, ROLE_PREMIUM
  
 *Note: Brief example for implementing roles with Spring Security*
 
