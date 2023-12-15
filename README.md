@@ -16,17 +16,26 @@ User roles:
 ![image](https://github.com/viktoriyageorge/MorNooNight/assets/73623633/efa62d5a-215d-48a4-a6aa-8f82695c1eed)
 authorities/roles - ROLE_ADMIN, ROLE_USER, ROLE_PREMIUM
 
-Requirements related to user:
 
-**Req1** As a user, I should be able to log in by username and password(for all roles)
+Requierments related to user:
 
-**Req2** As a user, I should be able to register with ROLE_USER by providing the information from the User diagram
+**Req1** As an user, I should be able to login by username and password(for the 3 roles)
 
-**Req3** As a user, I should be able to set my PIN. 
+**Req2** As an user, I should be able to register with ROLE_USER by providing the information from User diagram
 
-**Req4** As a user, I should be able to change my PIN by providing the old and the new one. 
+**Req3** As an user, I should be able to change my password by providing the old and the new one.
 
-**Req5** As a user, I should be able to log in with username and pin(//enhancing spring security with pin functionality)
+**Req4** As an user, I should be able to set my PIN. 
+
+**Req5** As an user, I should be able to change my PIN by providing the old and the new one. 
+
+**Req6** As an user, I should be able to login with username and pin(//enhancing spring security with pin functionality)
+
+**ADMIN**
+
+**Req7** As an user with ROLE_ADMIN, I should be able to get list of all users.
+
+**Req8** As an user with ROLE_ADMIN, I should be able to enable/disable a user by his username.
 
 
 
