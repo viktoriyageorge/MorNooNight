@@ -293,6 +293,9 @@
 **Requirement ID:** CM3
 
 **Description:** As a user, I should be able to edit details for the habit tracker.
+
+## User Requirements
+
 **Title:** Performance Requirement
 
 **Requirement ID:** NF001
