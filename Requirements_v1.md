@@ -70,6 +70,22 @@
 
 **Description:** As a user with ROLE_ADMIN, I should be able to enable/disable a user by his username.
 
+---
+
+**Title:** Admin Content Management Functionality
+
+**Requirement ID:** U10
+
+**Description:** As a user with ROLE_ADMIN, I should be able to manage habit tracker templates.
+
+---
+
+**Title:** Admin Color Palettes Functionality
+
+**Requirement ID:** U11
+
+**Description:** As a user with ROLE_ADMIN, I should be able to manage color palettes.
+
 ## Settings Requirements
 
 **Title:** Access to Terms and Conditions Functionality
@@ -277,3 +293,112 @@
 **Requirement ID:** CM3
 
 **Description:** As a user, I should be able to edit details for the habit tracker.
+**Title:** Performance Requirement
+
+**Requirement ID:** NF001
+
+**Description:** The application shall respond to user interactions within 1 second for 95% of requests. The backend API should handle at least 500 requests per second during peak usage.
+
+---
+
+**Title:** Reliability Requirement
+
+**Requirement ID:** NF002
+
+**Description:** The application shall have a 99.9% uptime monthly, excluding scheduled maintenance.
+
+---
+
+**Title:** Availability Requirement
+
+**Requirement ID:** NF003
+
+**Description:** The application should be accessible to users 24/7, with scheduled maintenance windows communicated in advance.
+
+---
+
+**Title:** Data Security Requirement
+
+**Requirement ID:** NF004
+
+**Description:** User data, including habits and personal information, must be encrypted during transmission and storage.
+
+---
+
+**Title:** Authentication Requirement
+
+**Requirement ID:** NF005
+
+**Description:** Enforce the use of strong passwords with a combination of uppercase and lowercase letters, numbers, and special characters. Ensure that default usernames and passwords are changed, especially for administrative accounts.
+
+---
+
+**Title:** Authorization Requirement
+
+**Requirement ID:** NF006
+
+**Description:** Implement Role-Based Access Control (RBAC) to assign specific roles to users, and determine access rights based on those roles. Using JWT for authorization, validate and verify tokens to ensure their integrity and prevent token-based attacks. Ensure that user sessions are properly invalidated after logout or inactivity to prevent unauthorized access.
+
+---
+
+**Title:** Data Backup and Recovery Requirement
+
+**Requirement ID:** NF007
+
+**Description:** Regular automated backups of the MySQL database should be performed, and a recovery plan must be in place in case of data loss.
+
+---
+
+**Title:** Cross-browser Compatibility Requirement
+
+**Requirement ID:** NF008
+
+**Description:** The application must be compatible with the latest versions of major web browsers (Chrome, Firefox, Safari).
+
+---
+
+**Title:** Usability Requirement
+
+**Requirement ID:** NF009
+
+**Description:** The user interface should follow responsive design principles, providing a seamless experience across various devices and screen sizes.
+
+---
+
+**Title:** Load Time Requirement
+
+**Requirement ID:** NF010
+
+**Description:** The application's initial load time should not exceed 3 seconds on 3G mobile networks.
+
+---
+
+**Title:** Error Handling Requirement
+
+**Requirement ID:** NF011
+
+**Description:** The application must provide clear and user-friendly error messages for common scenarios, guiding users on issue resolution.
+
+---
+
+**Title:** Logging and Monitoring Requirement
+
+**Requirement ID:** NF012
+
+**Description:** Comprehensive logging should be implemented to capture errors, warnings, and usage patterns.
+
+---
+
+**Title:** Data Encryption Requirement
+
+**Requirement ID:** NF013
+
+**Description:** All communication between the Ionic Angular app and the Java Spring backend must be encrypted using HTTPS. User data stored in the MySQL database should be encrypted, especially sensitive information like passwords.
+
+---
+
+**Title:** Performance Requirement for Mobile Networks
+
+**Requirement ID:** NF014
+
+**Description:** The application should load within 3 seconds on 3G mobile networks to ensure a smooth user experience.
