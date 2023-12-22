@@ -294,7 +294,7 @@
 
 **Description:** As a user, I should be able to edit details for the habit tracker.
 
-## User Requirements
+## Non-functional Requirements
 
 **Title:** Performance Requirement
 
