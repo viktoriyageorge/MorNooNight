@@ -1,0 +1,24 @@
+#I want a docker-compose.yml file that will run the following containers:
+# 1. A container for MySQL database
+services:
+  mysql:
+    container_name: mysql
+    image: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: HAPPYNOTES
+      MYSQL_ROOT_USER: root
+    volumes:
+      - mysql:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - mysql
+    restart: unless-stopped
+
+networks:
+  mysql:
+    driver: bridge
+
+volumes:
+    mysql:
