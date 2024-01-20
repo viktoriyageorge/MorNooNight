@@ -68,6 +68,7 @@ public class SecurityConfiguration {
               .permitAll()
               .requestMatchers("/api/v1/demo/**").hasRole(Role.ADMIN.name())
               .requestMatchers("/api/v1/user/**").hasAnyRole(Role.USER.name(), Role.ADMIN.name(), Role.PREMIUM_USER.name())
+              .requestMatchers("/api/v1/gratitudes/**").hasAnyRole(Role.USER.name(), Role.ADMIN.name(), Role.PREMIUM_USER.name())
               .anyRequest()
               .authenticated();
         })

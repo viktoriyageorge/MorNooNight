@@ -4,14 +4,17 @@ import bg.fmi.HappyNotes.configuration.JwtService;
 import bg.fmi.HappyNotes.model.AuthRequest;
 import bg.fmi.HappyNotes.model.AuthResponse;
 import bg.fmi.HappyNotes.model.Gender;
+import bg.fmi.HappyNotes.model.Gratitude;
 import bg.fmi.HappyNotes.model.RegisterRequest;
 import bg.fmi.HappyNotes.model.Role;
 import bg.fmi.HappyNotes.model.Token;
 import bg.fmi.HappyNotes.model.TokenType;
 import bg.fmi.HappyNotes.model.User;
+import bg.fmi.HappyNotes.repository.GratitudeRepository;
 import bg.fmi.HappyNotes.repository.TokenRepository;
 import bg.fmi.HappyNotes.repository.UserRepository;
 import bg.fmi.HappyNotes.service.AuthService;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +28,7 @@ public class AuthServiceImpl implements AuthService {
 
   private final TokenRepository tokenRepository;
   private final UserRepository userRepository;
+  private final GratitudeRepository gratitudeRepository;
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
 
@@ -56,8 +60,7 @@ public class AuthServiceImpl implements AuthService {
 
   private String generateAndSaveToken(User user) {
     String jwt = jwtService.generateToken(user);
-    Token token = Token
-        .builder()
+    Token token = Token.builder()
         .user(user)
         .token(jwt)
         .tokenType(TokenType.BEARER)
@@ -79,7 +82,7 @@ public class AuthServiceImpl implements AuthService {
   }
 
   private User createUser(RegisterRequest registerRequest) {
-    return User.builder()
+    User user = User.builder()
         .age(registerRequest.getAge())
         .username(registerRequest.getUsername())
         .password(passwordEncoder.encode(registerRequest.getPassword()))
@@ -87,32 +90,79 @@ public class AuthServiceImpl implements AuthService {
         .pin(passwordEncoder.encode(registerRequest.getPin()))
         .gender(registerRequest.getGender())
         .build();
+    userRepository.save(user);
+    List<Gratitude> gratitudes = createSampleGratitudes(user);
+    user.setGratitudes(gratitudes);
+    userRepository.save(user);
+    return user;
   }
 
   public AuthResponse registerAdminUser() {
     User admin = getOrCreateAdminUser();
     String tokenString = getOrCreateTokenForUser(admin);
-    List<User> users = new ArrayList<>();
-    users.add(new User(null, "user1", 25, "password1", "pin1", true, 100, Role.USER, new ArrayList<>(), Gender.MALE));
-    users.add(new User(null, "user2", 30, "password2", "pin2", true, 200, Role.USER, new ArrayList<>(), Gender.FEMALE));
-    users.add(new User(null, "user3", 35, "password3", "pin3", true, 300, Role.PREMIUM_USER, new ArrayList<>(), Gender.MALE));
-    users.add(new User(null, "user4", 40, "password4", "pin4", true, 400, Role.PREMIUM_USER, new ArrayList<>(), Gender.FEMALE));
-    users.add(new User(null, "user5", 45, "password5", "pin5", true, 500, Role.USER, new ArrayList<>(), Gender.MALE));
 
-    // Save the users to the database
+    List<User> users = createSampleUsers(); // Creating sample users with gratitudes
+
     userRepository.saveAll(users);
-    return AuthResponse.builder()
-        .token(tokenString)
-        .build();
+    return AuthResponse.builder().token(tokenString).build();
+  }
+
+  private List<User> createSampleUsers() {
+    List<User> users = new ArrayList<>();
+    // Create and add sample users
+    for (int i = 1; i <= 5; i++) {
+      User user = new User();
+      user.setUsername("user" + i);
+      user.setAge(20 + 5 * i);
+      user.setPassword(passwordEncoder.encode("password" + i));
+      user.setPin(passwordEncoder.encode("pin" + i));
+      user.setEnabled(true);
+      user.setJettons(100 * i);
+      user.setRole(i % 2 == 0 ? Role.USER : Role.PREMIUM_USER);
+      user.setGender(i % 2 == 0 ? Gender.MALE : Gender.FEMALE);
+      users.add(user);
+    }
+    userRepository.saveAll(users);
+
+    users.forEach(user -> {
+      List<Gratitude> gratitudes = createSampleGratitudes(user);
+      user.setGratitudes(gratitudes);
+      userRepository.save(user);
+    });
+
+    return users;
   }
 
   private User getOrCreateAdminUser() {
     return userRepository.findByUsername("admin@mail")
         .orElseGet(() -> {
-          User admin = createAdminUser();
+          User admin = createAdminUserWithGratitudes();
           userRepository.save(admin);
           return admin;
         });
+  }
+
+  private User createAdminUserWithGratitudes() {
+    User admin = User.builder()
+        .username("admin@mail")
+        .enabled(true)
+        .password(passwordEncoder.encode("admin"))
+        .role(Role.ADMIN)
+        .build();
+    userRepository.save(admin);
+    List<Gratitude> gratitudes = createSampleGratitudes(admin);
+    admin.setGratitudes(gratitudes);
+    userRepository.save(admin);
+    return admin;
+  }
+
+  private List<Gratitude> createSampleGratitudes(User user) {
+    List<Gratitude> gratitudes = new ArrayList<>();
+    gratitudes.add(Gratitude.builder().message("Thank you for your hard work").createdDate(LocalDateTime.now().minusDays(10)).updatedDate(LocalDateTime.now().minusDays(3)).user(user).build());
+    gratitudes.add(Gratitude.builder().message("Great job on the project!").createdDate(LocalDateTime.now().minusDays(10)).updatedDate(LocalDateTime.now().minusDays(2)).user(user).build());
+    gratitudes.add(Gratitude.builder().message("Your contributions are highly valued").createdDate(LocalDateTime.now().minusDays(10)).updatedDate(LocalDateTime.now().minusDays(1)).user(user).build());
+
+    return gratitudeRepository.saveAll(gratitudes);
   }
 
   private String getOrCreateTokenForUser(User user) {
@@ -128,13 +178,5 @@ public class AuthServiceImpl implements AuthService {
           tokenRepository.save(token);
           return jwt;
         });
-  }
-
-  private User createAdminUser() {
-    return User.builder()
-        .username("admin@mail")
-        .password(passwordEncoder.encode("admin"))
-        .role(Role.ADMIN)
-        .build();
   }
 }

@@ -1,5 +1,6 @@
 package bg.fmi.HappyNotes.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -51,6 +52,9 @@ public class User implements UserDetails {
 
   @Enumerated(EnumType.STRING)
   private Gender gender;
+
+  @OneToMany(mappedBy = "user")
+  private List<Gratitude> gratitudes;
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
