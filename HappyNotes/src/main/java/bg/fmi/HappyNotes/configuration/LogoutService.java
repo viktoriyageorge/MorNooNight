@@ -22,19 +22,20 @@ public class LogoutService implements LogoutHandler {
       Authentication authentication) {
 
     final String authHeader = request.getHeader("Authorization");
-    final String jwt;
     if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+      response.setStatus(
+          HttpServletResponse.SC_BAD_REQUEST); // Set response status to 400 Bad Request
       return;
     }
-    jwt = authHeader.substring(7);
+    final String jwt = authHeader.substring(7);
 
-    Token storedToken = tokenRepository.findByToken(jwt)
-        .orElse(null);
+    Token storedToken = tokenRepository.findByToken(jwt).orElse(null);
 
     if (storedToken != null) {
       storedToken.setExpiredAt(LocalDateTime.now());
       tokenRepository.save(storedToken);
-      SecurityContextHolder.clearContext();
     }
+    SecurityContextHolder.clearContext();
   }
 }
+

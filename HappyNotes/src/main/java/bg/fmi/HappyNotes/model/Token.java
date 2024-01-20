@@ -38,4 +38,16 @@ public class Token {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    @Override
+    public String toString() {
+        return "Token{" +
+            "id=" + id +
+            ", token='" + token + '\'' +
+            ", tokenType=" + tokenType +
+            ", expiredAt=" + expiredAt +
+            // User is not included to avoid recursion
+            '}';
+    }
 }
+

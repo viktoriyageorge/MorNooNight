@@ -61,4 +61,16 @@ public class GratitudeServiceImpl implements GratitudeService {
 
     return test;
   }
+
+  @Override
+  public Integer getGratitudeCountForToday() {
+    User loggedInUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    return gratitudeRepository.countOfGratitudesForCurrentDay(loggedInUser.getId());
+  }
+
+  @Override
+  public Integer getGratitudeCountForMonth() {
+    User loggedInUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    return gratitudeRepository.countGratitudesForTheMonth(loggedInUser.getId());
+  }
 }

@@ -33,7 +33,18 @@ public class Gratitude {
   private LocalDateTime updatedDate;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JsonIgnore
+  @JsonBackReference
   @JoinColumn(name = "user_id")
   private User user;
+
+  @Override
+  public String toString() {
+    return "Gratitude{" +
+        "id=" + id +
+        ", message='" + message + '\'' +
+        ", createdDate=" + createdDate +
+        ", updatedDate=" + updatedDate +
+        // User is not included to avoid recursion
+        '}';
+  }
 }

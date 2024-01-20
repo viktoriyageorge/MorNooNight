@@ -13,4 +13,9 @@ public interface GratitudeService {
   void deleteGratitude(Integer id);
 
   List<Gratitude> getGratitudesBetweenDates(LocalDateTime startDate, LocalDateTime endDate);
+
+  Integer getGratitudeCountForToday();
+
+  Integer getGratitudeCountForMonth();
+
 }

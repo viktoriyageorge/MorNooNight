@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -45,5 +46,17 @@ public class GratitudeController {
   public ResponseEntity<Void> deleteGratitude(@RequestParam(name = "id") Integer id) {
     gratitudeService.deleteGratitude(id);
     return ResponseEntity.ok().build();
+  }
+
+  @GetMapping("/countForToday")
+  @PreAuthorize("hasRole('PREMIUM_USER')")
+  public ResponseEntity<Integer> getGratitudeCountForToday() {
+    return ResponseEntity.ok(gratitudeService.getGratitudeCountForToday());
+  }
+
+  @GetMapping("/countForMonth")
+  @PreAuthorize("hasRole('PREMIUM_USER')")
+  public ResponseEntity<Integer> getGratitudeCountForMonth() {
+    return ResponseEntity.ok(gratitudeService.getGratitudeCountForMonth());
   }
 }

@@ -54,6 +54,7 @@ public class User implements UserDetails {
   private Gender gender;
 
   @OneToMany(mappedBy = "user")
+  @JsonManagedReference
   private List<Gratitude> gratitudes;
 
   @Override
