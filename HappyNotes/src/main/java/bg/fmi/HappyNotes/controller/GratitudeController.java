@@ -1,12 +1,14 @@
 package bg.fmi.HappyNotes.controller;
 
 
+import bg.fmi.HappyNotes.dto.GratitudeDTO;
 import bg.fmi.HappyNotes.dto.GratitudeDataDTO;
 import bg.fmi.HappyNotes.model.Gratitude;
 import bg.fmi.HappyNotes.service.GratitudeService;
 import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
@@ -58,5 +60,35 @@ public class GratitudeController {
   @PreAuthorize("hasRole('PREMIUM_USER')")
   public ResponseEntity<Integer> getGratitudeCountForMonth() {
     return ResponseEntity.ok(gratitudeService.getGratitudeCountForMonth());
+  }
+
+  @GetMapping("/countForYear")
+  @PreAuthorize("hasRole('PREMIUM_USER')")
+  public ResponseEntity<Integer> getCountOfGratitudesByUserIdForCurrentYear() {
+    return ResponseEntity.ok(gratitudeService.getCountOfGratitudesByUserIdForCurrentYear());
+  }
+
+  @GetMapping("/countByMonthForYear")
+  @PreAuthorize("hasRole('PREMIUM_USER')")
+  public ResponseEntity<Map<Integer, Integer>> getGratitudeCountByMonthForCurrentYear(@RequestParam(name = "month") Integer month) {
+    return ResponseEntity.ok(gratitudeService.getGratitudeCountByMonthForCurrentYear(month));
+  }
+
+  @GetMapping("/countPerMonthForYear")
+  @PreAuthorize("hasRole('PREMIUM_USER')")
+  public ResponseEntity<Map<Integer, Integer>> getGratitudeCountByMonthForCurrentYear() {
+    return ResponseEntity.ok(gratitudeService.getGratitudeCountByMonthForCurrentYear());
+  }
+
+  @GetMapping("/random")
+  @PreAuthorize("hasAnyRole('PREMIUM_USER', 'USER')")
+  public ResponseEntity<List<GratitudeDTO>> getRandomGratitudesForUser() {
+    return ResponseEntity.ok(gratitudeService.getRandomGratitudesForUser());
+  }
+
+  @GetMapping("/latest")
+  @PreAuthorize("hasAnyRole('PREMIUM_USER', 'USER')")
+  public ResponseEntity<List<GratitudeDTO>> getLatestGratitudes() {
+    return ResponseEntity.ok(gratitudeService.getTop10LatestGratitudesForUser());
   }
 }

@@ -22,6 +22,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -59,6 +60,11 @@ public class SecurityConfiguration {
   }
 
   @Bean
+  public WebClient.Builder webClientBuilder() {
+    return WebClient.builder();
+  }
+
+  @Bean
   public SecurityFilterChain filterChain(HttpSecurity httpSecurity,
       JwtAuthenticationFilter jwtAuthFilter) throws Exception {
     return httpSecurity
@@ -69,6 +75,7 @@ public class SecurityConfiguration {
               .requestMatchers("/api/v1/demo/**").hasRole(Role.ADMIN.name())
               .requestMatchers("/api/v1/user/**").hasAnyRole(Role.USER.name(), Role.ADMIN.name(), Role.PREMIUM_USER.name())
               .requestMatchers("/api/v1/gratitudes/**").hasAnyRole(Role.USER.name(), Role.ADMIN.name(), Role.PREMIUM_USER.name())
+              .requestMatchers("/api/v1/quotes/**").hasAnyRole(Role.USER.name(), Role.ADMIN.name(), Role.PREMIUM_USER.name())
               .anyRequest()
               .authenticated();
         })

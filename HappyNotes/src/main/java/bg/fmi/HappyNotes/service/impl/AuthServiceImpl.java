@@ -87,7 +87,8 @@ public class AuthServiceImpl implements AuthService {
         .username(registerRequest.getUsername())
         .password(passwordEncoder.encode(registerRequest.getPassword()))
         .role(Role.USER)
-        .pin(passwordEncoder.encode(registerRequest.getPin()))
+        .pin((registerRequest.getPin() == null || registerRequest.getPin().isBlank()) ? null
+            : passwordEncoder.encode(registerRequest.getPin()))
         .gender(registerRequest.getGender())
         .build();
     userRepository.save(user);
@@ -158,9 +159,18 @@ public class AuthServiceImpl implements AuthService {
 
   private List<Gratitude> createSampleGratitudes(User user) {
     List<Gratitude> gratitudes = new ArrayList<>();
-    gratitudes.add(Gratitude.builder().message("Thank you for your hard work").createdDate(LocalDateTime.now().minusDays(10)).updatedDate(LocalDateTime.now().minusDays(3)).user(user).build());
-    gratitudes.add(Gratitude.builder().message("Great job on the project!").createdDate(LocalDateTime.now().minusDays(10)).updatedDate(LocalDateTime.now().minusDays(2)).user(user).build());
-    gratitudes.add(Gratitude.builder().message("Your contributions are highly valued").createdDate(LocalDateTime.now().minusDays(10)).updatedDate(LocalDateTime.now().minusDays(1)).user(user).build());
+    gratitudes.add(Gratitude.builder().message("Thank you for your hard work")
+        .createdDate(LocalDateTime.now().minusDays(5)).updatedDate(LocalDateTime.now().minusDays(3))
+        .user(user).build());
+    gratitudes.add(Gratitude.builder().message("Great job on the project!")
+        .createdDate(LocalDateTime.now().minusDays(6)).updatedDate(LocalDateTime.now().minusDays(2))
+        .user(user).build());
+    gratitudes.add(Gratitude.builder().message("Your contributions are highly valued")
+        .createdDate(LocalDateTime.now().plusMonths(1))
+        .updatedDate(LocalDateTime.now().minusDays(1)).user(user).build());
+    gratitudes.add(
+        Gratitude.builder().message("Nigga").createdDate(LocalDateTime.now().minusDays(8))
+            .updatedDate(LocalDateTime.now().plusMonths(2)).user(user).build());
 
     return gratitudeRepository.saveAll(gratitudes);
   }

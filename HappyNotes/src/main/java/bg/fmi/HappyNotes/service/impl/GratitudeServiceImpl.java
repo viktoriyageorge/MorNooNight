@@ -1,6 +1,9 @@
 package bg.fmi.HappyNotes.service.impl;
 
+import bg.fmi.HappyNotes.dto.GratitudeCountDailyPerMonthDTO;
+import bg.fmi.HappyNotes.dto.GratitudeCountPerMonthDTO;
 import bg.fmi.HappyNotes.dto.GratitudeDataDTO;
+import bg.fmi.HappyNotes.dto.GratitudeDTO;
 import bg.fmi.HappyNotes.exceptions.GratitudeException;
 import bg.fmi.HappyNotes.model.Gratitude;
 import bg.fmi.HappyNotes.model.User;
@@ -8,6 +11,8 @@ import bg.fmi.HappyNotes.repository.GratitudeRepository;
 import bg.fmi.HappyNotes.service.GratitudeService;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -20,11 +25,12 @@ public class GratitudeServiceImpl implements GratitudeService {
 
   @Override
   public Gratitude createGratitude(GratitudeDataDTO newGratitude) {
-    if(newGratitude.getMessage() == null || newGratitude.getMessage().isEmpty()) {
+    if (newGratitude.getMessage() == null || newGratitude.getMessage().isEmpty()) {
       throw new GratitudeException("Message cannot be empty");
     }
 
-    User loggedInUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    User loggedInUser = (User) SecurityContextHolder.getContext().getAuthentication()
+        .getPrincipal();
 
     var gratitude = Gratitude.builder()
         .message(newGratitude.getMessage())
@@ -39,7 +45,8 @@ public class GratitudeServiceImpl implements GratitudeService {
   @Override
   public Gratitude editGratitude(GratitudeDataDTO editedGratitudeInfo) {
     var gratitude = gratitudeRepository.findById(editedGratitudeInfo.getId())
-        .orElseThrow(() -> new GratitudeException("Gratitude with id " + editedGratitudeInfo.getId() + " not found"));
+        .orElseThrow(() -> new GratitudeException(
+            "Gratitude with id " + editedGratitudeInfo.getId() + " not found"));
 
     gratitude.setMessage(editedGratitudeInfo.getMessage());
     gratitude.setUpdatedDate(LocalDateTime.now());
@@ -55,22 +62,74 @@ public class GratitudeServiceImpl implements GratitudeService {
   @Override
   public List<Gratitude> getGratitudesBetweenDates(LocalDateTime startDate, LocalDateTime endDate) {
 
-    User loggedInUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    User loggedInUser = (User) SecurityContextHolder.getContext().getAuthentication()
+        .getPrincipal();
 
-    var test = gratitudeRepository.findByUserIdAndUpdatedDateBetween(loggedInUser.getId(), startDate, endDate);
+    var test = gratitudeRepository.findByUserIdAndUpdatedDateBetween(loggedInUser.getId(),
+        startDate, endDate);
 
     return test;
   }
 
   @Override
   public Integer getGratitudeCountForToday() {
-    User loggedInUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    User loggedInUser = (User) SecurityContextHolder.getContext().getAuthentication()
+        .getPrincipal();
     return gratitudeRepository.countOfGratitudesForCurrentDay(loggedInUser.getId());
   }
 
   @Override
   public Integer getGratitudeCountForMonth() {
-    User loggedInUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    User loggedInUser = (User) SecurityContextHolder.getContext().getAuthentication()
+        .getPrincipal();
     return gratitudeRepository.countGratitudesForTheMonth(loggedInUser.getId());
+  }
+
+  public Integer getCountOfGratitudesByUserIdForCurrentYear() {
+    User loggedInUser = (User) SecurityContextHolder.getContext().getAuthentication()
+        .getPrincipal();
+    return gratitudeRepository.countGratitudesByUserIdForCurrentYear(loggedInUser.getId());
+  }
+
+  @Override
+  public Map<Integer, Integer> getGratitudeCountByMonthForCurrentYear(Integer month) {
+    User loggedInUser = (User) SecurityContextHolder.getContext().getAuthentication()
+        .getPrincipal();
+    return gratitudeRepository.findGratitudeCountsForEachDayInMonth(month, loggedInUser.getId())
+        .stream()
+        .collect(
+            Collectors.toMap(
+                GratitudeCountDailyPerMonthDTO::getDay,
+                GratitudeCountDailyPerMonthDTO::getGratitudeCount
+            )
+        );
+  }
+
+  @Override
+  public Map<Integer, Integer> getGratitudeCountByMonthForCurrentYear() {
+    User loggedInUser = (User) SecurityContextHolder.getContext().getAuthentication()
+        .getPrincipal();
+    return gratitudeRepository.findGratitudeCountsForEachMonthInCurrentYear(loggedInUser.getId())
+        .stream()
+        .collect(
+            Collectors.toMap(
+                GratitudeCountPerMonthDTO::getMonth,
+                GratitudeCountPerMonthDTO::getCount
+            )
+        );
+  }
+
+  @Override
+  public List<GratitudeDTO> getRandomGratitudesForUser() {
+    User loggedInUser = (User) SecurityContextHolder.getContext().getAuthentication()
+        .getPrincipal();
+    return gratitudeRepository.findRandomGratitudesForUser(loggedInUser.getId());
+  }
+
+  @Override
+  public List<GratitudeDTO> getTop10LatestGratitudesForUser() {
+    User loggedInUser = (User) SecurityContextHolder.getContext().getAuthentication()
+        .getPrincipal();
+    return gratitudeRepository.findTop10ByUserIdOrderByCreatedDateDesc(loggedInUser.getId());
   }
 }
