@@ -76,6 +76,8 @@ public class SecurityConfiguration {
               .requestMatchers("/api/v1/user/**").hasAnyRole(Role.USER.name(), Role.ADMIN.name(), Role.PREMIUM_USER.name())
               .requestMatchers("/api/v1/gratitudes/**").hasAnyRole(Role.USER.name(), Role.ADMIN.name(), Role.PREMIUM_USER.name())
               .requestMatchers("/api/v1/quotes/**").hasAnyRole(Role.USER.name(), Role.ADMIN.name(), Role.PREMIUM_USER.name())
+              .requestMatchers("/api/v1/habitTrackers/**").hasAnyRole(Role.USER.name(), Role.ADMIN.name(), Role.PREMIUM_USER.name())
+              .requestMatchers("api/v1/color-palettes/**").hasAnyRole(Role.USER.name(), Role.ADMIN.name(), Role.PREMIUM_USER.name())
               .anyRequest()
               .authenticated();
         })

@@ -1,6 +1,8 @@
 package bg.fmi.HappyNotes.configuration;
 
 import bg.fmi.HappyNotes.exceptions.GratitudeException;
+import bg.fmi.HappyNotes.exceptions.HabitTrackerException;
+import bg.fmi.HappyNotes.exceptions.UserAlreadyExistsException;
 import bg.fmi.HappyNotes.exceptions.UserNotFoundException;
 import bg.fmi.HappyNotes.exceptions.UserCredentialsMismatchException;
 import org.springframework.http.HttpStatus;
@@ -17,12 +19,21 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(UserCredentialsMismatchException.class)
-  public ResponseEntity<?> handleException(UserCredentialsMismatchException e) {
+  public ResponseEntity<String> handleException(UserCredentialsMismatchException e) {
     return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(e.getMessage());
+  }
+
+  public ResponseEntity<String> handleException(UserAlreadyExistsException e) {
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
   }
 
   @ExceptionHandler(GratitudeException.class)
   public ResponseEntity<String> handleException(GratitudeException e) {
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+  }
+
+  @ExceptionHandler(HabitTrackerException.class)
+  public ResponseEntity<String> handleException(HabitTrackerException e) {
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
   }
 }

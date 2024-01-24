@@ -30,4 +30,6 @@ public interface GratitudeService {
 
   List<GratitudeDTO> getTop10LatestGratitudesForUser();
 
+
+
 }

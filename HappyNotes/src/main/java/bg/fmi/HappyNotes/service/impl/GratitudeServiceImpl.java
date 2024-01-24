@@ -2,14 +2,21 @@ package bg.fmi.HappyNotes.service.impl;
 
 import bg.fmi.HappyNotes.dto.GratitudeCountDailyPerMonthDTO;
 import bg.fmi.HappyNotes.dto.GratitudeCountPerMonthDTO;
-import bg.fmi.HappyNotes.dto.GratitudeDataDTO;
 import bg.fmi.HappyNotes.dto.GratitudeDTO;
+import bg.fmi.HappyNotes.dto.GratitudeDataDTO;
 import bg.fmi.HappyNotes.exceptions.GratitudeException;
 import bg.fmi.HappyNotes.model.Gratitude;
+import bg.fmi.HappyNotes.model.Role;
 import bg.fmi.HappyNotes.model.User;
 import bg.fmi.HappyNotes.repository.GratitudeRepository;
+import bg.fmi.HappyNotes.repository.InspirationalQuoteRepository;
+import bg.fmi.HappyNotes.repository.UserRepository;
 import bg.fmi.HappyNotes.service.GratitudeService;
+import bg.fmi.HappyNotes.service.QuoteService;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -22,6 +29,9 @@ import org.springframework.stereotype.Service;
 public class GratitudeServiceImpl implements GratitudeService {
 
   private final GratitudeRepository gratitudeRepository;
+  private final UserRepository userRepository;
+  private final QuoteService quoteService;
+  private final InspirationalQuoteRepository inspirationalQuoteRepository;
 
   @Override
   public Gratitude createGratitude(GratitudeDataDTO newGratitude) {
@@ -38,8 +48,15 @@ public class GratitudeServiceImpl implements GratitudeService {
         .updatedDate(LocalDateTime.now())
         .user(loggedInUser)
         .build();
+    Gratitude savedGratitude = gratitudeRepository.save(gratitude);
 
-    return gratitudeRepository.save(gratitude);
+    var user = userRepository.findById(loggedInUser.getId()).get();
+    var bedTime = user.getNotification().getBedTime();
+
+    addJettonsForPremiumUser(user, bedTime);
+    addInspirationalQuoteForPremiumUser(user);
+
+    return savedGratitude;
   }
 
   @Override
@@ -65,10 +82,8 @@ public class GratitudeServiceImpl implements GratitudeService {
     User loggedInUser = (User) SecurityContextHolder.getContext().getAuthentication()
         .getPrincipal();
 
-    var test = gratitudeRepository.findByUserIdAndUpdatedDateBetween(loggedInUser.getId(),
+    return gratitudeRepository.findByUserIdAndUpdatedDateBetween(loggedInUser.getId(),
         startDate, endDate);
-
-    return test;
   }
 
   @Override
@@ -131,5 +146,31 @@ public class GratitudeServiceImpl implements GratitudeService {
     User loggedInUser = (User) SecurityContextHolder.getContext().getAuthentication()
         .getPrincipal();
     return gratitudeRepository.findTop10ByUserIdOrderByCreatedDateDesc(loggedInUser.getId());
+  }
+
+  private void addInspirationalQuoteForPremiumUser(User user) {
+    var quotes = user.getQuotes();
+    if (user.getRole().equals(Role.PREMIUM_USER) && quotes.stream()
+        .noneMatch(quote -> quote.getDateAdded().equals(LocalDate.now()))) {
+      var newQuote = quoteService.getUniqueQuoteForUser(user);
+      newQuote.setUser(user);
+      inspirationalQuoteRepository.save(newQuote);
+      quotes.add(newQuote);
+      user.setQuotes(quotes);
+      userRepository.save(user);
+    }
+  }
+
+  private void addJettonsForPremiumUser(User user, String bedTime) {
+    if (bedTime != null && !bedTime.isBlank()) {
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+      LocalTime time = LocalTime.parse(bedTime, formatter);
+      if (user.getRole().equals(Role.PREMIUM_USER) && time.isBefore(LocalTime.now())
+          && LocalTime.of(23, 59).isAfter(LocalTime.now())) {
+        var jettons = user.getJettons();
+        user.setJettons(jettons + 1);
+        userRepository.save(user);
+      }
+    }
   }
 }

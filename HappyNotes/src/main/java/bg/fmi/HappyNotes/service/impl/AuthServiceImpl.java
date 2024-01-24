@@ -1,16 +1,21 @@
 package bg.fmi.HappyNotes.service.impl;
 
 import bg.fmi.HappyNotes.configuration.JwtService;
+import bg.fmi.HappyNotes.exceptions.UserAlreadyExistsException;
+import bg.fmi.HappyNotes.exceptions.UserCredentialsMismatchException;
+import bg.fmi.HappyNotes.exceptions.UserNotFoundException;
 import bg.fmi.HappyNotes.model.AuthRequest;
 import bg.fmi.HappyNotes.model.AuthResponse;
 import bg.fmi.HappyNotes.model.Gender;
 import bg.fmi.HappyNotes.model.Gratitude;
+import bg.fmi.HappyNotes.model.Notification;
 import bg.fmi.HappyNotes.model.RegisterRequest;
 import bg.fmi.HappyNotes.model.Role;
 import bg.fmi.HappyNotes.model.Token;
 import bg.fmi.HappyNotes.model.TokenType;
 import bg.fmi.HappyNotes.model.User;
 import bg.fmi.HappyNotes.repository.GratitudeRepository;
+import bg.fmi.HappyNotes.repository.NotificationRepository;
 import bg.fmi.HappyNotes.repository.TokenRepository;
 import bg.fmi.HappyNotes.repository.UserRepository;
 import bg.fmi.HappyNotes.service.AuthService;
@@ -29,6 +34,7 @@ public class AuthServiceImpl implements AuthService {
   private final TokenRepository tokenRepository;
   private final UserRepository userRepository;
   private final GratitudeRepository gratitudeRepository;
+  private final NotificationRepository notificationRepository;
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
 
@@ -45,9 +51,9 @@ public class AuthServiceImpl implements AuthService {
 
   private User verifyUser(AuthRequest authRequest) {
     User user = userRepository.findByUsername(authRequest.getUsername())
-        .orElseThrow(() -> new RuntimeException("User not found"));
+        .orElseThrow(() -> new UserNotFoundException("User not found"));
     if (!passwordEncoder.matches(authRequest.getPassword(), user.getPassword())) {
-      throw new RuntimeException("Invalid password");
+      throw new UserCredentialsMismatchException("Invalid password");
     }
     return user;
   }
@@ -72,7 +78,7 @@ public class AuthServiceImpl implements AuthService {
   @Override
   public AuthResponse register(RegisterRequest registerRequest) {
     if (userRepository.findByUsername(registerRequest.getUsername()).isPresent()) {
-      throw new RuntimeException("User with this email already exists");
+      throw new UserAlreadyExistsException("User with this email already exists");
     }
 
     User user = createUser(registerRequest);
@@ -92,6 +98,9 @@ public class AuthServiceImpl implements AuthService {
         .gender(registerRequest.getGender())
         .build();
     userRepository.save(user);
+    user.setNotification(Notification.builder().user(user).build());
+    notificationRepository.save(user.getNotification());
+
     List<Gratitude> gratitudes = createSampleGratitudes(user);
     user.setGratitudes(gratitudes);
     userRepository.save(user);
@@ -121,6 +130,7 @@ public class AuthServiceImpl implements AuthService {
       user.setJettons(100 * i);
       user.setRole(i % 2 == 0 ? Role.USER : Role.PREMIUM_USER);
       user.setGender(i % 2 == 0 ? Gender.MALE : Gender.FEMALE);
+      user.setQuotes(new ArrayList<>());
       users.add(user);
     }
     userRepository.saveAll(users);
@@ -153,6 +163,8 @@ public class AuthServiceImpl implements AuthService {
     userRepository.save(admin);
     List<Gratitude> gratitudes = createSampleGratitudes(admin);
     admin.setGratitudes(gratitudes);
+    admin.setNotification(Notification.builder().user(admin).build());
+    notificationRepository.save(admin.getNotification());
     userRepository.save(admin);
     return admin;
   }

@@ -1,9 +1,8 @@
 package bg.fmi.HappyNotes.service;
 
 import bg.fmi.HappyNotes.model.InspirationalQuote;
+import bg.fmi.HappyNotes.model.User;
 import java.time.LocalDate;
-import java.util.List;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -17,6 +16,24 @@ public class QuoteService {
 
   public QuoteService(WebClient.Builder webClientBuilder) {
     this.webClient = webClientBuilder.baseUrl(QUOTE_API_URL).build();
+  }
+
+  public InspirationalQuote getUniqueQuoteForUser(User user) {
+    InspirationalQuote newQuote;
+    boolean isUnique;
+
+    do {
+      newQuote = getQuote(); // Fetch a new quote
+      isUnique = isQuoteUniqueForUser(newQuote, user);
+    } while (!isUnique);
+
+    return newQuote;
+  }
+
+  private boolean isQuoteUniqueForUser(InspirationalQuote quote, User user) {
+    return user.getQuotes().stream()
+        .noneMatch(existingQuote -> existingQuote.getContent().equals(quote.getContent())
+            && existingQuote.getAuthor().equals(quote.getAuthor()));
   }
 
   public InspirationalQuote getQuote() {
