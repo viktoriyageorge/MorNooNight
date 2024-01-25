@@ -8,6 +8,7 @@ import bg.fmi.HappyNotes.model.AuthRequest;
 import bg.fmi.HappyNotes.model.AuthResponse;
 import bg.fmi.HappyNotes.model.Gender;
 import bg.fmi.HappyNotes.model.Gratitude;
+import bg.fmi.HappyNotes.model.Habit;
 import bg.fmi.HappyNotes.model.Notification;
 import bg.fmi.HappyNotes.model.RegisterRequest;
 import bg.fmi.HappyNotes.model.Role;
@@ -15,12 +16,15 @@ import bg.fmi.HappyNotes.model.Token;
 import bg.fmi.HappyNotes.model.TokenType;
 import bg.fmi.HappyNotes.model.User;
 import bg.fmi.HappyNotes.repository.GratitudeRepository;
+import bg.fmi.HappyNotes.repository.HabitRepository;
 import bg.fmi.HappyNotes.repository.NotificationRepository;
 import bg.fmi.HappyNotes.repository.TokenRepository;
 import bg.fmi.HappyNotes.repository.UserRepository;
 import bg.fmi.HappyNotes.service.AuthService;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +39,8 @@ public class AuthServiceImpl implements AuthService {
   private final UserRepository userRepository;
   private final GratitudeRepository gratitudeRepository;
   private final NotificationRepository notificationRepository;
+  private final HabitRepository habitRepository;
+
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
 
@@ -101,8 +107,7 @@ public class AuthServiceImpl implements AuthService {
     user.setNotification(Notification.builder().user(user).build());
     notificationRepository.save(user.getNotification());
 
-    List<Gratitude> gratitudes = createSampleGratitudes(user);
-    user.setGratitudes(gratitudes);
+    user.setGratitudes(Collections.emptyList());
     userRepository.save(user);
     return user;
   }
@@ -112,6 +117,7 @@ public class AuthServiceImpl implements AuthService {
     String tokenString = getOrCreateTokenForUser(admin);
 
     List<User> users = createSampleUsers(); // Creating sample users with gratitudes
+    insertSampleData(); // Creating sample habits and notifications
 
     userRepository.saveAll(users);
     return AuthResponse.builder().token(tokenString).build();
@@ -200,5 +206,30 @@ public class AuthServiceImpl implements AuthService {
           tokenRepository.save(token);
           return jwt;
         });
+  }
+
+  public void insertSampleData() {
+    List<Habit> habits = new ArrayList<>();
+
+    for (int i = 1; i <= 5; i++) {
+      Habit habit = new Habit();
+      habit.setTitle("Habit " + i);
+      habit.setYearMonth(YearMonth.of(2024, i));
+      habit.setTimesPerMonth(10 * i);
+      habit.setUserId(i);
+      habit.setTrackerId(i);
+      habit.setPaletteId(i);
+
+      List<LocalDateTime> coloringTimes = new ArrayList<>();
+      coloringTimes.add(LocalDateTime.now().plusDays(i));
+      coloringTimes.add(LocalDateTime.now().plusDays(i + 1));
+      coloringTimes.add(LocalDateTime.now().plusDays(i + 2));
+
+      habit.setColoringTimes(coloringTimes);
+
+      habits.add(habit);
+    }
+
+    habitRepository.saveAll(habits);
   }
 }

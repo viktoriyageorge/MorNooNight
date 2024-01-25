@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+/**
+ * Ако админ го качва - да се направи специален лист
+ */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/habitTracker")
