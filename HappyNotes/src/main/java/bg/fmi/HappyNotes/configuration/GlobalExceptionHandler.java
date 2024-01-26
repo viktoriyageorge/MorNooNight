@@ -23,13 +23,14 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(e.getMessage());
   }
 
+  @ExceptionHandler(UserAlreadyExistsException.class)
   public ResponseEntity<String> handleException(UserAlreadyExistsException e) {
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+    return ResponseEntity.status(HttpStatus.IM_USED).body(e.getMessage());
   }
 
   @ExceptionHandler(GratitudeException.class)
   public ResponseEntity<String> handleException(GratitudeException e) {
-    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
   }
 
   @ExceptionHandler(HabitTrackerException.class)

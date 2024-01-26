@@ -33,6 +33,18 @@ public class SecurityConfiguration {
   private final UserRepository userRepository;
   private final LogoutService logoutLogic;
 
+  private static final String[] WHITE_LIST_URLS = {"/api/v1/auth/**",
+      "/v2/api-docs",
+      "/v3/api-docs",
+      "/v3/api-docs/**",
+      "/swagger-resources",
+      "/swagger-resources/**",
+      "/configuration/ui",
+      "/configuration/security",
+      "/swagger-ui/**",
+      "/webjars/**",
+      "/swagger-ui.html"};
+
   @Bean
   public UserDetailsService userDetailsService() {
     return username -> userRepository.findByUsername(username)
@@ -70,15 +82,20 @@ public class SecurityConfiguration {
     return httpSecurity
         .csrf(AbstractHttpConfigurer::disable)
         .authorizeHttpRequests(req -> {
-          req.requestMatchers("/api/v1/auth/**")
-              .permitAll()
+          req.requestMatchers(WHITE_LIST_URLS).permitAll()
               .requestMatchers("/api/v1/demo/**").hasRole(Role.ADMIN.name())
-              .requestMatchers("/api/v1/user/**").hasAnyRole(Role.USER.name(), Role.ADMIN.name(), Role.PREMIUM_USER.name())
-              .requestMatchers("/api/v1/gratitudes/**").hasAnyRole(Role.USER.name(), Role.ADMIN.name(), Role.PREMIUM_USER.name())
-              .requestMatchers("/api/v1/quotes/**").hasAnyRole(Role.USER.name(), Role.ADMIN.name(), Role.PREMIUM_USER.name())
-              .requestMatchers("/api/v1/habitTrackers/**").hasAnyRole(Role.USER.name(), Role.ADMIN.name(), Role.PREMIUM_USER.name())
-              .requestMatchers("api/v1/color-palettes/**").hasAnyRole(Role.USER.name(), Role.ADMIN.name(), Role.PREMIUM_USER.name())
-              .requestMatchers("/api/v1/habit/**").hasAnyRole(Role.USER.name(), Role.ADMIN.name(), Role.PREMIUM_USER.name())
+              .requestMatchers("/api/v1/user/**")
+              .hasAnyRole(Role.USER.name(), Role.ADMIN.name(), Role.PREMIUM_USER.name())
+              .requestMatchers("/api/v1/gratitudes/**")
+              .hasAnyRole(Role.USER.name(), Role.ADMIN.name(), Role.PREMIUM_USER.name())
+              .requestMatchers("/api/v1/quotes/**")
+              .hasAnyRole(Role.USER.name(), Role.ADMIN.name(), Role.PREMIUM_USER.name())
+              .requestMatchers("/api/v1/habitTrackers/**")
+              .hasAnyRole(Role.USER.name(), Role.ADMIN.name(), Role.PREMIUM_USER.name())
+              .requestMatchers("api/v1/color-palettes/**")
+              .hasAnyRole(Role.USER.name(), Role.ADMIN.name(), Role.PREMIUM_USER.name())
+              .requestMatchers("/api/v1/habit/**")
+              .hasAnyRole(Role.USER.name(), Role.ADMIN.name(), Role.PREMIUM_USER.name())
               .anyRequest()
               .authenticated();
         })

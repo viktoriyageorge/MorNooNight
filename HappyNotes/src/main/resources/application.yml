@@ -19,3 +19,8 @@ application:
     jwt:
       secret-key: 56a11c91692220bca5d479bd1de2c0c0f90dfbeb397a831fcddd433437354099
       expiration: 86400000 # a day
+
+
+happy-notes:
+  open-api:
+    dev-url: http://localhost:8080
