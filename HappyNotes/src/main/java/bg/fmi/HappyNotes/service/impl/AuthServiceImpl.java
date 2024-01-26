@@ -44,6 +44,7 @@ public class AuthServiceImpl implements AuthService {
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
 
+
   @Override
   public AuthResponse authenticate(AuthRequest authRequest) {
     User user = verifyUser(authRequest);
@@ -91,6 +92,23 @@ public class AuthServiceImpl implements AuthService {
     userRepository.save(user);
     String jwt = generateAndSaveToken(user);
     return AuthResponse.builder().token(jwt).build();
+  }
+
+  @Override
+  public Boolean validateToken(String token) {
+    String user = jwtService.extractUsername(token);
+    var userFromToken = userRepository.findByUsername(user);
+    if (userFromToken.isEmpty()) {
+      return false;
+    }
+    var isTokenValid = jwtService.isTokenValid(token, userFromToken.get());
+
+    var isDBTokenExpired = tokenRepository.findByToken(token)
+        .map(t -> t.getExpiredAt() == null)
+        .orElse(false);
+
+    return isTokenValid && isDBTokenExpired;
+
   }
 
   private User createUser(RegisterRequest registerRequest) {

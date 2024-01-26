@@ -10,9 +10,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -34,7 +36,8 @@ public class AuthController {
           description = "Either the username or email is already taken")
   })
   @PostMapping("/register")
-  public ResponseEntity<AuthResponse> register(@RequestBody @Valid RegisterRequest registerRequest) {
+  public ResponseEntity<AuthResponse> register(
+      @RequestBody @Valid RegisterRequest registerRequest) {
 
     return ResponseEntity.ok(authService.register(registerRequest));
   }
@@ -51,5 +54,25 @@ public class AuthController {
   @PostMapping("/authenticate")
   public ResponseEntity<AuthResponse> authenticate(@RequestBody @Valid AuthRequest authRequest) {
     return ResponseEntity.ok(authService.authenticate(authRequest));
+  }
+
+  @Operation(summary = "Validate token",
+      description = "Validate the given token",
+      tags = {"auth", "validate", "get"})
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200",
+          description = "Successfully validated token"),
+      @ApiResponse(responseCode = "403",
+          description = "Invalid token")
+  })
+  @PostMapping("/validate")
+  public ResponseEntity<Boolean> validateToken(@RequestHeader HttpHeaders headers) {
+    String authorizationHeader = headers.getFirst("Authorization");
+
+    if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+      return ResponseEntity.ok(false);
+    }
+    var authToken = authorizationHeader.substring(7);
+    return ResponseEntity.ok(authService.validateToken(authToken));
   }
 }
