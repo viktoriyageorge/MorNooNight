@@ -72,7 +72,10 @@ public class AuthController {
     if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
       return ResponseEntity.ok(false);
     }
-    var authToken = authorizationHeader.substring(7);
-    return ResponseEntity.ok(authService.validateToken(authToken));
+
+    String authToken = authorizationHeader.substring(7);
+    boolean isValid = authService.validateToken(authToken);
+
+    return ResponseEntity.ok(isValid);
   }
 }

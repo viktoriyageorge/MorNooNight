@@ -1,11 +1,13 @@
 package bg.fmi.HappyNotes.controller;
 
+import bg.fmi.HappyNotes.model.HabitTracker;
 import bg.fmi.HappyNotes.model.UploadFileResponse;
 import bg.fmi.HappyNotes.service.HabitTrackerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
@@ -70,5 +72,10 @@ public class HabitTrackerController {
         .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION,
             "attachment; filename=\"" + habitTracker.getName() + "\"")
         .body(new ByteArrayResource(habitTracker.getImage()));
+  }
+
+  @GetMapping("/getAllCreatedByAdmin")
+  public ResponseEntity<List<HabitTracker>> getAllHabitTrackersCreatedByAdmin() {
+    return ResponseEntity.ok(service.getAllHabitTrackersCreatedByAdmin());
   }
 }

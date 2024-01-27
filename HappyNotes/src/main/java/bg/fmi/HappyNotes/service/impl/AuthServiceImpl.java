@@ -50,10 +50,10 @@ public class AuthServiceImpl implements AuthService {
     User user = verifyUser(authRequest);
     Optional<String> existingToken = getValidTokenIfExists(user);
     if (existingToken.isPresent()) {
-      return AuthResponse.builder().token(existingToken.get()).build();
+      return AuthResponse.builder().token(existingToken.get()).role(user.getRole()).build();
     }
     String newToken = generateAndSaveToken(user);
-    return AuthResponse.builder().token(newToken).build();
+    return AuthResponse.builder().token(newToken).role(user.getRole()).build();
   }
 
   private User verifyUser(AuthRequest authRequest) {
@@ -91,24 +91,21 @@ public class AuthServiceImpl implements AuthService {
     User user = createUser(registerRequest);
     userRepository.save(user);
     String jwt = generateAndSaveToken(user);
-    return AuthResponse.builder().token(jwt).build();
+    return AuthResponse.builder().token(jwt).role(user.getRole()).build();
   }
 
   @Override
   public Boolean validateToken(String token) {
-    String user = jwtService.extractUsername(token);
-    var userFromToken = userRepository.findByUsername(user);
-    if (userFromToken.isEmpty()) {
+    try {
+      String username = jwtService.extractUsername(token);
+      return userRepository.findByUsername(username)
+          .filter(user -> jwtService.isTokenValid(token, user))
+          .flatMap(user -> tokenRepository.findByToken(token))
+          .map(tokenEntity -> tokenEntity.getExpiredAt() == null)
+          .orElse(false);
+    } catch (Exception e) {
       return false;
     }
-    var isTokenValid = jwtService.isTokenValid(token, userFromToken.get());
-
-    var isDBTokenExpired = tokenRepository.findByToken(token)
-        .map(t -> t.getExpiredAt() == null)
-        .orElse(false);
-
-    return isTokenValid && isDBTokenExpired;
-
   }
 
   private User createUser(RegisterRequest registerRequest) {

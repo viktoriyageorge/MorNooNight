@@ -21,4 +21,7 @@ public interface HabitRepository extends JpaRepository<Habit, Integer> {
 
   @Query(value = "SELECT * FROM habit WHERE user_id = :userId AND YEAR(`year_month`) = YEAR(:yearMonth)", nativeQuery = true)
   List<Habit> findAllByUserIdAndDate(Integer userId, LocalDate yearMonth);
+
+  @Query(value = "SELECT tracker_id FROM habit", nativeQuery = true)
+  List<Integer> getUsedTrackerIds();
 }

@@ -5,6 +5,7 @@ import bg.fmi.HappyNotes.model.HabitTracker;
 import bg.fmi.HappyNotes.repository.HabitTrackerRepository;
 import bg.fmi.HappyNotes.service.HabitTrackerService;
 import java.io.IOException;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -39,5 +40,10 @@ public class HabitTrackerServiceImpl implements HabitTrackerService {
   public HabitTracker getFile(Integer fileId) {
     return habitTrackerRepository.findById(fileId)
         .orElseThrow(() -> new HabitTrackerException("File not found with id " + fileId));
+  }
+
+  @Override
+  public List<HabitTracker> getAllHabitTrackersCreatedByAdmin() {
+    return habitTrackerRepository.findByIsCreatedByAdminTrue();
   }
 }

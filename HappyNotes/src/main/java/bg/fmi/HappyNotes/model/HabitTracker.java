@@ -28,4 +28,6 @@ public class HabitTracker {
   @Lob
   @Column(columnDefinition="LONGBLOB")
   byte[] image;
+
+  private boolean isCreatedByAdmin;
 }
