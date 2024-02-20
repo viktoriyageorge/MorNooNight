@@ -25,3 +25,11 @@ application:
 happy-notes:
   open-api:
     dev-url: http://localhost:8080
+
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG
+        web:
+          cors: DEBUG
