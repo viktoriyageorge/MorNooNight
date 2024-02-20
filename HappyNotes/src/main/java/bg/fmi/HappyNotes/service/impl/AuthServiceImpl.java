@@ -86,9 +86,9 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private Optional<String> getValidTokenIfExists(User user) {
-        return tokenRepository.findByUserId(user.getId())
+        return tokenRepository.findByUserId(user.getId()).stream()
                 .filter(token -> token.getExpiredAt() != null)
-                .map(Token::getToken);
+                .map(Token::getToken).findFirst();
     }
 
     private String generateAndSaveToken(User user) {
@@ -302,7 +302,11 @@ public class AuthServiceImpl implements AuthService {
 
 
     private String getOrCreateTokenForUser(User user) {
-        return tokenRepository.findByUserId(user.getId()).map(Token::getToken).orElseGet(() -> generateAndSaveToken(user));
+        return tokenRepository.findByUserId(user.getId())
+                .stream()
+                .map(Token::getToken)
+                .findFirst()
+                .orElseGet(() -> generateAndSaveToken(user));
     }
 
     public void insertSampleData() {
