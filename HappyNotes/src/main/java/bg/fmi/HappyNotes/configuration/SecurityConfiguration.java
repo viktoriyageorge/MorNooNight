@@ -38,7 +38,8 @@ public class SecurityConfiguration {
     private final UserRepository userRepository;
     private final LogoutService logoutLogic;
 
-    private static final String[] WHITE_LIST_URLS = {"/api/v1/auth/**",
+    private static final String[] WHITE_LIST_URLS = {
+            "/api/v1/auth/**",
             "/v2/api-docs",
             "/v3/api-docs",
             "/v3/api-docs/**",
@@ -127,9 +128,11 @@ public class SecurityConfiguration {
         config.addAllowedMethod("GET");
         config.addAllowedMethod("PATCH");
         config.addAllowedMethod("POST");
+        config.addAllowedMethod("OPTIONS");
         config.addAllowedMethod("PUT");
         config.addAllowedMethod("DELETE");
         config.addAllowedHeader("*");
+        config.applyPermitDefaultValues();
         config.setAllowCredentials(true);
         config.setMaxAge(3600L);
         source.registerCorsConfiguration("/**", config);
