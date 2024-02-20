@@ -14,7 +14,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
                 .setAllowedOrigins("http://localhost:8102", "http://192.168.0.103:8102",
-                        "https://happy-notes-pbev683o0-viktoriyageorges-projects.vercel.app", "*")
+                        "https://happy-notes-pbev683o0-viktoriyageorges-projects.vercel.app")
                 .withSockJS();
     }
 
