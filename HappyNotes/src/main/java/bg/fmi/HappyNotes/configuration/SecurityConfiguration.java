@@ -31,6 +31,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.List;
+
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
@@ -124,9 +126,12 @@ public class SecurityConfiguration {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOrigin("https://happy-notes-5covcfpgp-viktoriyageorges-projects.vercel.app");
-        configuration.addAllowedMethod("*");
-        configuration.addAllowedHeader("*");
+        configuration.setAllowedOrigins(List.of(
+                "http://localhost:8102",
+                "http://192.168.0.103:8102",
+                "https://happy-notes-5covcfpgp-viktoriyageorges-projects.vercel.app"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L); // Adjust according to your needs
 
@@ -134,6 +139,7 @@ public class SecurityConfiguration {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
 
     @Bean
     public CorsFilter corsFilter() {
