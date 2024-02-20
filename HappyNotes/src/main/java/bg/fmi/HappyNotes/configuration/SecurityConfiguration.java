@@ -123,6 +123,7 @@ public class SecurityConfiguration {
         CorsConfiguration config = new CorsConfiguration();
         config.addAllowedOrigin("http://localhost:8102");
         config.addAllowedOrigin("http://192.168.0.103:8102");
+        config.addAllowedOrigin("https://happy-notes-pbev683o0-viktoriyageorges-projects.vercel.app");
         config.addAllowedMethod("GET");
         config.addAllowedMethod("PATCH");
         config.addAllowedMethod("POST");
