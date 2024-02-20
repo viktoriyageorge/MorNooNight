@@ -1,5 +1,6 @@
 package bg.fmi.HappyNotes.configuration;
 
+import static org.springframework.security.config.Customizer.withDefaults;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 import bg.fmi.HappyNotes.model.Role;
@@ -87,7 +88,7 @@ public class SecurityConfiguration {
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity,
                                            JwtAuthenticationFilter jwtAuthFilter) throws Exception {
         return httpSecurity
-                .cors().and() // Ensure CORS is applied before Spring Security
+                .cors(withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req -> {
                     req
