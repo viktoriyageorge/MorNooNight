@@ -87,6 +87,7 @@ public class SecurityConfiguration {
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity,
                                            JwtAuthenticationFilter jwtAuthFilter) throws Exception {
         return httpSecurity
+                .cors().and() // Ensure CORS is applied before Spring Security
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req -> {
                     req
