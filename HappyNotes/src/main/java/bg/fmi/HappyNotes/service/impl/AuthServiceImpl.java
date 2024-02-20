@@ -76,7 +76,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private String getValidTokenOrCreateNew(User user) {
-        Optional<Token> repositoryToken = tokenRepository.findByUserIdAndExpiredAtIsNull(user.getId());
+        Optional<Token> repositoryToken = tokenRepository.findByUserIdAndExpiredAtIsNull(user.getId()).stream().findFirst();
         if (repositoryToken.isPresent() && !jwtService.isTokenValid(repositoryToken.get().getToken(), user)) {
             tokenRepository.delete(repositoryToken.get());
             return repositoryToken.get().getToken();
@@ -114,7 +114,7 @@ public class AuthServiceImpl implements AuthService {
             String username = jwtService.extractUsername(token);
             return userRepository.findByUsername(username)
                     .filter(user -> jwtService.isTokenValid(token, user))
-                    .flatMap(user -> tokenRepository.findByToken(token))
+                    .flatMap(user -> tokenRepository.findByToken(token).stream().findFirst())
                     .map(tokenEntity -> tokenEntity.getExpiredAt() == null)
                     .orElse(false);
         } catch (Exception e) {
