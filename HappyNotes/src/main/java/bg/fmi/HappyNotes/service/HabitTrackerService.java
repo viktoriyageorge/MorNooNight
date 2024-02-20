@@ -1,5 +1,6 @@
 package bg.fmi.HappyNotes.service;
 
+import bg.fmi.HappyNotes.dto.HabitTrackerDto;
 import bg.fmi.HappyNotes.model.HabitTracker;
 import java.io.IOException;
 import java.util.List;
@@ -10,5 +11,6 @@ public interface HabitTrackerService {
 
   HabitTracker getFile(Integer fileId);
 
-  List<HabitTracker> getAllHabitTrackersCreatedByAdmin();
+  List<HabitTrackerDto> getAllHabitTrackersCreatedByAdmin();
+  HabitTrackerDto getHabitTrackerById(Integer id);
 }

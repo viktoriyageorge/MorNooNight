@@ -80,15 +80,20 @@ public class HabitController {
   }
 
   @Operation(summary = "Get habits for month",
-      description = "Get all habits for the current user for a given month",
-      tags = {"habits", "get", "month"})
+          description = "Get all habits for the current user for a given month",
+          tags = {"habits", "get", "month"})
   @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Returned all habits for a given month"),
-      @ApiResponse(responseCode = "403", description = "Invalid JWT token")
+          @ApiResponse(responseCode = "200", description = "Returned all habits for a given month"),
+          @ApiResponse(responseCode = "403", description = "Invalid JWT token")
   })
   @GetMapping("/month")
   public ResponseEntity<List<Habit>> getHabitsForMonth(@RequestParam(name = "date") YearMonth yearMonth) {
     return ResponseEntity.ok(service.getHabitsForMonth(yearMonth));
+  }
+
+  @GetMapping("/{id}/isCompleted")
+  public ResponseEntity<Boolean> isCompletedForToday(@PathVariable(name = "id") Integer id) {
+    return ResponseEntity.ok(service.getIsHabitCompletedForToday(id));
   }
 
   @Operation(summary = "Get habits for year",

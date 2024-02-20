@@ -1,5 +1,6 @@
 package bg.fmi.HappyNotes.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import lombok.Data;
@@ -19,4 +20,7 @@ public class RegisterRequest {
     private Integer age;
     @Nullable
     private String pin;
+
+    @JsonProperty("isPremium")
+    private boolean isPremium;
 }

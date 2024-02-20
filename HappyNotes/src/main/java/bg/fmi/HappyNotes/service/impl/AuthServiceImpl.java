@@ -21,230 +21,292 @@ import bg.fmi.HappyNotes.repository.NotificationRepository;
 import bg.fmi.HappyNotes.repository.TokenRepository;
 import bg.fmi.HappyNotes.repository.UserRepository;
 import bg.fmi.HappyNotes.service.AuthService;
+
 import java.time.LocalDateTime;
 import java.time.YearMonth;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
-  private final TokenRepository tokenRepository;
-  private final UserRepository userRepository;
-  private final GratitudeRepository gratitudeRepository;
-  private final NotificationRepository notificationRepository;
-  private final HabitRepository habitRepository;
+    private final TokenRepository tokenRepository;
+    private final UserRepository userRepository;
+    private final GratitudeRepository gratitudeRepository;
+    private final NotificationRepository notificationRepository;
+    private final HabitRepository habitRepository;
 
-  private final PasswordEncoder passwordEncoder;
-  private final JwtService jwtService;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
 
-  @Override
-  public AuthResponse authenticate(AuthRequest authRequest) {
-    User user = verifyUser(authRequest);
-    Optional<String> existingToken = getValidTokenIfExists(user);
-    if (existingToken.isPresent()) {
-      return AuthResponse.builder().token(existingToken.get()).role(user.getRole()).build();
-    }
-    String newToken = generateAndSaveToken(user);
-    return AuthResponse.builder().token(newToken).role(user.getRole()).build();
-  }
-
-  private User verifyUser(AuthRequest authRequest) {
-    User user = userRepository.findByUsername(authRequest.getUsername())
-        .orElseThrow(() -> new UserNotFoundException("User not found"));
-    if (!passwordEncoder.matches(authRequest.getPassword(), user.getPassword())) {
-      throw new UserCredentialsMismatchException("Invalid password");
-    }
-    return user;
-  }
-
-  private Optional<String> getValidTokenIfExists(User user) {
-    return tokenRepository.findByUserId(user.getId())
-        .filter(token -> token.getExpiredAt() != null)
-        .map(Token::getToken);
-  }
-
-  private String generateAndSaveToken(User user) {
-    String jwt = jwtService.generateToken(user);
-    Token token = Token.builder()
-        .user(user)
-        .token(jwt)
-        .tokenType(TokenType.BEARER)
-        .build();
-    tokenRepository.save(token);
-    return jwt;
-  }
-
-  @Override
-  public AuthResponse register(RegisterRequest registerRequest) {
-    if (userRepository.findByUsername(registerRequest.getUsername()).isPresent()) {
-      throw new UserAlreadyExistsException("User with this email already exists");
+    @Override
+    public AuthResponse authenticate(AuthRequest authRequest) {
+        User user = verifyUser(authRequest);
+        String token = getValidTokenOrCreateNew(user);
+        return AuthResponse.builder().token(token).role(user.getRole()).build();
     }
 
-    User user = createUser(registerRequest);
-    userRepository.save(user);
-    String jwt = generateAndSaveToken(user);
-    return AuthResponse.builder().token(jwt).role(user.getRole()).build();
-  }
-
-  @Override
-  public Boolean validateToken(String token) {
-    try {
-      String username = jwtService.extractUsername(token);
-      return userRepository.findByUsername(username)
-          .filter(user -> jwtService.isTokenValid(token, user))
-          .flatMap(user -> tokenRepository.findByToken(token))
-          .map(tokenEntity -> tokenEntity.getExpiredAt() == null)
-          .orElse(false);
-    } catch (Exception e) {
-      return false;
-    }
-  }
-
-  private User createUser(RegisterRequest registerRequest) {
-    User user = User.builder()
-        .age(registerRequest.getAge())
-        .username(registerRequest.getUsername())
-        .password(passwordEncoder.encode(registerRequest.getPassword()))
-        .role(Role.USER)
-        .pin((registerRequest.getPin() == null || registerRequest.getPin().isBlank()) ? null
-            : passwordEncoder.encode(registerRequest.getPin()))
-        .gender(registerRequest.getGender())
-        .build();
-    userRepository.save(user);
-    user.setNotification(Notification.builder().user(user).build());
-    notificationRepository.save(user.getNotification());
-
-    user.setGratitudes(Collections.emptyList());
-    userRepository.save(user);
-    return user;
-  }
-
-  public AuthResponse registerAdminUser() {
-    User admin = getOrCreateAdminUser();
-    String tokenString = getOrCreateTokenForUser(admin);
-
-    List<User> users = createSampleUsers(); // Creating sample users with gratitudes
-    insertSampleData(); // Creating sample habits and notifications
-
-    userRepository.saveAll(users);
-    return AuthResponse.builder().token(tokenString).build();
-  }
-
-  private List<User> createSampleUsers() {
-    List<User> users = new ArrayList<>();
-    // Create and add sample users
-    for (int i = 1; i <= 5; i++) {
-      User user = new User();
-      user.setUsername("user" + i);
-      user.setAge(20 + 5 * i);
-      user.setPassword(passwordEncoder.encode("password" + i));
-      user.setPin(passwordEncoder.encode("pin" + i));
-      user.setEnabled(true);
-      user.setJettons(100 * i);
-      user.setRole(i % 2 == 0 ? Role.USER : Role.PREMIUM_USER);
-      user.setGender(i % 2 == 0 ? Gender.MALE : Gender.FEMALE);
-      user.setQuotes(new ArrayList<>());
-      users.add(user);
-    }
-    userRepository.saveAll(users);
-
-    users.forEach(user -> {
-      List<Gratitude> gratitudes = createSampleGratitudes(user);
-      user.setGratitudes(gratitudes);
-      userRepository.save(user);
-    });
-
-    return users;
-  }
-
-  private User getOrCreateAdminUser() {
-    return userRepository.findByUsername("admin@mail")
-        .orElseGet(() -> {
-          User admin = createAdminUserWithGratitudes();
-          userRepository.save(admin);
-          return admin;
-        });
-  }
-
-  private User createAdminUserWithGratitudes() {
-    User admin = User.builder()
-        .username("admin@mail")
-        .enabled(true)
-        .password(passwordEncoder.encode("admin"))
-        .role(Role.ADMIN)
-        .build();
-    userRepository.save(admin);
-    List<Gratitude> gratitudes = createSampleGratitudes(admin);
-    admin.setGratitudes(gratitudes);
-    admin.setNotification(Notification.builder().user(admin).build());
-    notificationRepository.save(admin.getNotification());
-    userRepository.save(admin);
-    return admin;
-  }
-
-  private List<Gratitude> createSampleGratitudes(User user) {
-    List<Gratitude> gratitudes = new ArrayList<>();
-    gratitudes.add(Gratitude.builder().message("Thank you for your hard work")
-        .createdDate(LocalDateTime.now().minusDays(5)).updatedDate(LocalDateTime.now().minusDays(3))
-        .user(user).build());
-    gratitudes.add(Gratitude.builder().message("Great job on the project!")
-        .createdDate(LocalDateTime.now().minusDays(6)).updatedDate(LocalDateTime.now().minusDays(2))
-        .user(user).build());
-    gratitudes.add(Gratitude.builder().message("Your contributions are highly valued")
-        .createdDate(LocalDateTime.now().plusMonths(1))
-        .updatedDate(LocalDateTime.now().minusDays(1)).user(user).build());
-    gratitudes.add(
-        Gratitude.builder().message("Nigga").createdDate(LocalDateTime.now().minusDays(8))
-            .updatedDate(LocalDateTime.now().plusMonths(2)).user(user).build());
-
-    return gratitudeRepository.saveAll(gratitudes);
-  }
-
-  private String getOrCreateTokenForUser(User user) {
-    return tokenRepository.findByUserId(user.getId())
-        .map(Token::getToken)
-        .orElseGet(() -> {
-          String jwt = jwtService.generateToken(user);
-          Token token = Token.builder()
-              .user(user)
-              .token(jwt)
-              .tokenType(TokenType.BEARER)
-              .build();
-          tokenRepository.save(token);
-          return jwt;
-        });
-  }
-
-  public void insertSampleData() {
-    List<Habit> habits = new ArrayList<>();
-
-    for (int i = 1; i <= 5; i++) {
-      Habit habit = new Habit();
-      habit.setTitle("Habit " + i);
-      habit.setYearMonth(YearMonth.of(2024, i));
-      habit.setTimesPerMonth(10 * i);
-      habit.setUserId(i);
-      habit.setTrackerId(i);
-      habit.setPaletteId(i);
-
-      List<LocalDateTime> coloringTimes = new ArrayList<>();
-      coloringTimes.add(LocalDateTime.now().plusDays(i));
-      coloringTimes.add(LocalDateTime.now().plusDays(i + 1));
-      coloringTimes.add(LocalDateTime.now().plusDays(i + 2));
-
-      habit.setColoringTimes(coloringTimes);
-
-      habits.add(habit);
+    private User verifyUser(AuthRequest authRequest) {
+        User user = userRepository.findByUsername(authRequest.getUsername())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        if (!passwordEncoder.matches(authRequest.getPassword(), user.getPassword())) {
+            throw new UserCredentialsMismatchException("Invalid password");
+        }
+        ensureNotificationExists(user);
+        return user;
     }
 
-    habitRepository.saveAll(habits);
-  }
+    private void ensureNotificationExists(User user) {
+        if (user.getNotification() == null) {
+            Notification notification = new Notification();
+            notification.setUser(user); // Set the bi-directional relationship
+            notificationRepository.save(notification); // Persist the notification
+            user.setNotification(notification); // Ensure the user is aware of the new notification
+            // No need to save the user here as the relationship is managed and will be cascaded upon transaction commit
+        }
+    }
+
+    private String getValidTokenOrCreateNew(User user) {
+        Optional<Token> repositoryToken = tokenRepository.findByUserIdAndExpiredAtIsNull(user.getId());
+        if (repositoryToken.isPresent() && !jwtService.isTokenValid(repositoryToken.get().getToken(), user)) {
+            tokenRepository.delete(repositoryToken.get());
+            return repositoryToken.get().getToken();
+        }
+
+        return generateAndSaveToken(user);
+    }
+
+    private Optional<String> getValidTokenIfExists(User user) {
+        return tokenRepository.findByUserId(user.getId())
+                .filter(token -> token.getExpiredAt() != null)
+                .map(Token::getToken);
+    }
+
+    private String generateAndSaveToken(User user) {
+        String jwt = jwtService.generateToken(user);
+        Token token = Token.builder().user(user).token(jwt).tokenType(TokenType.BEARER).build();
+        tokenRepository.save(token);
+        return jwt;
+    }
+
+    @Override
+    public AuthResponse register(RegisterRequest registerRequest) {
+        if (userRepository.findByUsername(registerRequest.getUsername()).isPresent()) {
+            throw new UserAlreadyExistsException("User with this email already exists");
+        }
+        User user = createUser(registerRequest);
+        String jwt = generateAndSaveToken(user);
+        return AuthResponse.builder().token(jwt).role(user.getRole()).build();
+    }
+
+    @Override
+    public Boolean validateToken(String token) {
+        try {
+            String username = jwtService.extractUsername(token);
+            return userRepository.findByUsername(username)
+                    .filter(user -> jwtService.isTokenValid(token, user))
+                    .flatMap(user -> tokenRepository.findByToken(token))
+                    .map(tokenEntity -> tokenEntity.getExpiredAt() == null)
+                    .orElse(false);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private User createUser(RegisterRequest registerRequest) {
+        // Build the User entity from the registration request
+        User user = User.builder()
+                .age(registerRequest.getAge())
+                .username(registerRequest.getUsername())
+                .password(passwordEncoder.encode(registerRequest.getPassword()))
+                .role(registerRequest.isPremium() ? Role.PREMIUM_USER : Role.USER) // Assuming a check for premium
+                .pin(StringUtils.hasText(registerRequest.getPin()) ?
+                        passwordEncoder.encode(registerRequest.getPin()) : null)
+                .gender(registerRequest.getGender())
+                .enabled(true) // Assuming you want to enable the user upon registration
+                .build();
+
+        user.setNotification(notificationRepository.save(Notification.builder().user(user).build()));
+        // Save the user (and by cascade, the notification) in a single operation
+        // Ensure your User entity is configured to cascade persist operations to the Notification entity
+        return userRepository.save(user);
+    }
+
+    public AuthResponse registerAdminUser() {
+        User admin = getOrCreateAdminUser();
+        String tokenString = getOrCreateTokenForUser(admin);
+
+        // Simplify the creation and handling of sample data
+//        createSampleUsersAndData();
+
+        return AuthResponse.builder().token(tokenString).build();
+    }
+
+    private void createSampleUsersAndData() {
+        List<User> users = createSampleUsers();
+        insertSampleData(); // Assuming this method properly handles the creation of sample habits and does not need refactoring
+        userRepository.saveAll(users); // Save all users at once to optimize database interactions
+    }
+
+    @Transactional
+    private List<User> createSampleUsers() {
+        List<User> users = IntStream.rangeClosed(1, 5)
+                .mapToObj(this::createUserWithDetails)
+                .collect(Collectors.toList());
+
+        // Save and return users with gratitudes and notifications properly set up
+        return userRepository.saveAll(users);
+    }
+
+
+    private User createUserWithDetails(int i) {
+        User user = User.builder()
+                .username("user" + i)
+                .age(20 + 5 * i)
+                .password(passwordEncoder.encode("password" + i))
+                .pin(passwordEncoder.encode("pin" + i))
+                .enabled(true).jettons(100 * i)
+                .role(i % 2 == 0 ? Role.USER : Role.PREMIUM_USER)
+                .gender(i % 2 == 0 ? Gender.MALE : Gender.FEMALE)
+                .quotes(new ArrayList<>())
+                .build();
+
+        Notification notification = Notification.builder().user(user).build();
+        user.setNotification(notification);
+
+        user.setNotification(notificationRepository.save(notification));
+        return user;
+    }
+
+    private User getOrCreateAdminUser() {
+        return userRepository.findByUsername("admin@mail")
+                .orElseGet(this::createAdminUserWithGratitudes);
+    }
+
+    @Transactional
+    public User createAdminUserWithGratitudes() {
+        User admin = User.builder()
+                .username("admin@mail")
+                .enabled(true)
+                .password(passwordEncoder.encode("admin"))
+                .role(Role.ADMIN)
+                .build();
+
+        Notification notification = Notification.builder().user(admin).build();
+        notificationRepository.save(notification);
+
+        admin.setNotification(notification);
+        admin = userRepository.save(admin);
+
+        List<Gratitude> gratitudes = createSampleGratitudes(admin);
+        admin.setGratitudes(gratitudes);
+        gratitudeRepository.saveAll(gratitudes);
+
+        return admin;
+    }
+
+    private List<Gratitude> createSampleGratitudes(User user) {
+        List<Gratitude> gratitudes = Arrays.asList(
+                Gratitude.builder()
+                        .createdDate(LocalDateTime.now().minusDays(11))
+                        .message("Thank you for your hard work")
+                        .user(user)
+                        .build(),
+                Gratitude.builder()
+                        .createdDate(LocalDateTime.now().minusDays(10))
+                        .message("Great job on the project!")
+                        .user(user)
+                        .build(),
+                Gratitude.builder()
+                        .createdDate(LocalDateTime.now().minusDays(10))
+                        .message("Great job on the project!")
+                        .user(user)
+                        .build(),
+                Gratitude.builder()
+                        .createdDate(LocalDateTime.now().minusDays(9))
+                        .message("Great job on the project!")
+                        .user(user)
+                        .build(),
+                Gratitude.builder()
+                        .createdDate(LocalDateTime.now().minusDays(7))
+                        .message("Great job on the project!")
+                        .user(user)
+                        .build(),
+                Gratitude.builder()
+                        .createdDate(LocalDateTime.now().minusDays(7))
+                        .message("Your contributions are highly valued")
+                        .user(user)
+                        .build(),
+                Gratitude.builder()
+                        .createdDate(LocalDateTime.now().minusDays(7))
+                        .message("Your contributions are highly valued")
+                        .user(user)
+                        .build(),
+                Gratitude.builder()
+                        .createdDate(LocalDateTime.now().minusDays(7))
+                        .message("Your contributions are highly valued")
+                        .user(user)
+                        .build(),
+                Gratitude.builder()
+                        .createdDate(LocalDateTime.now().minusDays(6))
+                        .message("Your contributions are highly valued")
+                        .user(user)
+                        .build(),
+                Gratitude.builder()
+                        .createdDate(LocalDateTime.now().minusDays(5))
+                        .message("Your contributions are highly valued")
+                        .user(user)
+                        .build(),
+                Gratitude.builder()
+                        .createdDate(LocalDateTime.now().minusDays(4))
+                        .message("Your contributions are highly valued")
+                        .user(user)
+                        .build(),
+                Gratitude.builder()
+                        .createdDate(LocalDateTime.now().minusDays(3))
+                        .message("Your contributions are highly valued")
+                        .user(user)
+                        .build(),
+                Gratitude.builder()
+                        .createdDate(LocalDateTime.now().minusDays(3))
+                        .message("Your contributions are highly valued")
+                        .user(user)
+                        .build(),
+                Gratitude.builder()
+                        .createdDate(LocalDateTime.now().minusDays(3))
+                        .message("Your contributions are highly valued")
+                        .user(user)
+                        .build(),
+                Gratitude.builder()
+                        .createdDate(LocalDateTime.now().minusDays(2))
+                        .message("Your contributions are highly valued")
+                        .user(user)
+                        .build(),
+                Gratitude.builder()
+                        .createdDate(LocalDateTime.now().minusDays(2))
+                        .message("Your contributions are highly valued")
+                        .user(user)
+                        .build()
+        );
+        return gratitudeRepository.saveAll(gratitudes); // Save all gratitudes at once
+    }
+
+
+    private String getOrCreateTokenForUser(User user) {
+        return tokenRepository.findByUserId(user.getId()).map(Token::getToken).orElseGet(() -> generateAndSaveToken(user));
+    }
+
+    public void insertSampleData() {
+        List<Habit> habits = new ArrayList<>();
+        habitRepository.saveAll(habits);
+    }
 }

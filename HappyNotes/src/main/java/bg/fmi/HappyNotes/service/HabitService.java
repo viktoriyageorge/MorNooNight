@@ -19,4 +19,6 @@ public interface HabitService {
   Habit editHabit(Habit habit, boolean isColored);
 
   List<Habit> getHabitsForYear(YearMonth yearMonth);
+
+  Boolean getIsHabitCompletedForToday(Integer habitId);
 }

@@ -41,7 +41,7 @@ public class GratitudeController {
       @ApiResponse(responseCode = "200", description = "Successfully retrieved list of gratitudes for the specified time period."),
       @ApiResponse(responseCode = "403", description = "User is not authorized to access this resource or token is invalid.")
   })
-  @PreAuthorize("hasAnyRole('USER', 'PREMIUM_USER')")
+  @PreAuthorize("hasAnyRole('USER', 'PREMIUM_USER', 'ADMIN')")
   @GetMapping
   public ResponseEntity<List<Gratitude>> getGratitudesBetweenDates(@RequestParam(name = "from") @DateTimeFormat(iso = ISO.DATE_TIME) LocalDateTime startDate, @RequestParam(name = "to") LocalDateTime endDate) {
     return ResponseEntity.ok(gratitudeService.getGratitudesBetweenDates(startDate, endDate));
@@ -66,7 +66,7 @@ public class GratitudeController {
       @ApiResponse(responseCode = "200", description = "Successfully edited an existing gratitude."),
       @ApiResponse(responseCode = "404", description = "Gratitude does not exist")
   })
-  @PreAuthorize("hasAnyRole('USER', 'PREMIUM_USER')")
+  @PreAuthorize("hasAnyRole('USER', 'PREMIUM_USER', 'ADMIN')")
   @PatchMapping("/edit")
   public ResponseEntity<Gratitude> editGratitude(@Valid @RequestBody GratitudeDataDTO gratitudeEditDTO) {
     return ResponseEntity.ok(gratitudeService.editGratitude(gratitudeEditDTO));
@@ -78,7 +78,7 @@ public class GratitudeController {
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Successfully deleted an existing gratitude.")
   })
-  @PreAuthorize("hasAnyRole('USER', 'PREMIUM_USER')")
+  @PreAuthorize("hasAnyRole('USER', 'PREMIUM_USER', 'ADMIN')")
   @DeleteMapping("/delete")
   public ResponseEntity<Void> deleteGratitude(@RequestParam(name = "id") Integer id) {
     gratitudeService.deleteGratitude(id);
@@ -93,7 +93,7 @@ public class GratitudeController {
       @ApiResponse(responseCode = "403", description = "User is not authorized to access this resource or token is invalid.")
   })
   @GetMapping("/countForToday")
-  @PreAuthorize("hasRole('PREMIUM_USER')")
+  @PreAuthorize("hasAnyRole('PREMIUM_USER', 'ADMIN')")
   public ResponseEntity<Integer> getGratitudeCountForToday() {
     return ResponseEntity.ok(gratitudeService.getGratitudeCountForToday());
   }
@@ -106,7 +106,7 @@ public class GratitudeController {
       @ApiResponse(responseCode = "403", description = "User is not authorized to access this resource or token is invalid.")
   })
   @GetMapping("/countForMonth")
-  @PreAuthorize("hasRole('PREMIUM_USER')")
+  @PreAuthorize("hasAnyRole('PREMIUM_USER', 'ADMIN')")
   public ResponseEntity<Integer> getGratitudeCountForMonth() {
     return ResponseEntity.ok(gratitudeService.getGratitudeCountForMonth());
   }
@@ -119,7 +119,7 @@ public class GratitudeController {
       @ApiResponse(responseCode = "403", description = "User is not authorized to access this resource or token is invalid.")
   })
   @GetMapping("/countForYear")
-  @PreAuthorize("hasRole('PREMIUM_USER')")
+  @PreAuthorize("hasAnyRole('PREMIUM_USER', 'ADMIN')")
   public ResponseEntity<Integer> getCountOfGratitudesByUserIdForCurrentYear() {
     return ResponseEntity.ok(gratitudeService.getCountOfGratitudesByUserIdForCurrentYear());
   }
@@ -132,7 +132,7 @@ public class GratitudeController {
       @ApiResponse(responseCode = "403", description = "User is not authorized to access this resource or token is invalid.")
   })
   @GetMapping("/countByMonthForYear")
-  @PreAuthorize("hasRole('PREMIUM_USER')")
+  @PreAuthorize("hasAnyRole('PREMIUM_USER', 'ADMIN')")
   public ResponseEntity<Map<Integer, Integer>> getGratitudeCountByMonthForCurrentYear(@RequestParam(name = "month") Integer month) {
     return ResponseEntity.ok(gratitudeService.getGratitudeCountByMonthForCurrentYear(month));
   }
@@ -145,7 +145,7 @@ public class GratitudeController {
       @ApiResponse(responseCode = "403", description = "User is not authorized to access this resource or token is invalid.")
   })
   @GetMapping("/countPerMonthForYear")
-  @PreAuthorize("hasRole('PREMIUM_USER')")
+  @PreAuthorize("hasAnyRole('PREMIUM_USER', 'ADMIN')")
   public ResponseEntity<Map<Integer, Integer>> getGratitudeCountByMonthForCurrentYear() {
     return ResponseEntity.ok(gratitudeService.getGratitudeCountByMonthForCurrentYear());
   }
@@ -158,7 +158,7 @@ public class GratitudeController {
       @ApiResponse(responseCode = "403", description = "User is not authorized to access this resource or token is invalid.")
   })
   @GetMapping("/random")
-  @PreAuthorize("hasAnyRole('PREMIUM_USER', 'USER')")
+  @PreAuthorize("hasAnyRole('PREMIUM_USER', 'USER', 'ADMIN')")
   public ResponseEntity<List<GratitudeDTO>> getRandomGratitudesForUser() {
     return ResponseEntity.ok(gratitudeService.getRandomGratitudesForUser());
   }
@@ -171,7 +171,7 @@ public class GratitudeController {
       @ApiResponse(responseCode = "403", description = "User is not authorized to access this resource or token is invalid.")
   })
   @GetMapping("/latest")
-  @PreAuthorize("hasAnyRole('PREMIUM_USER', 'USER')")
+  @PreAuthorize("hasAnyRole('PREMIUM_USER', 'USER', 'ADMIN')")
   public ResponseEntity<List<GratitudeDTO>> getLatestGratitudes() {
     return ResponseEntity.ok(gratitudeService.getTop10LatestGratitudesForUser());
   }
