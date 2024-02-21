@@ -129,7 +129,7 @@ public class SecurityConfiguration {
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:8102",
                 "http://192.168.0.103:8102",
-                "https://happy-notes-3rou7st6b-viktoriyageorges-projects.vercel.app"));
+                "https://happy-notes-95ytmumzm-viktoriyageorges-projects.vercel.app"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
@@ -147,7 +147,7 @@ public class SecurityConfiguration {
         CorsConfiguration config = new CorsConfiguration();
         config.addAllowedOrigin("http://localhost:8102");
         config.addAllowedOrigin("http://192.168.0.103:8102");
-        config.addAllowedOrigin("https://happy-notes-3rou7st6b-viktoriyageorges-projects.vercel.app");
+        config.addAllowedOrigin("https://happy-notes-95ytmumzm-viktoriyageorges-projects.vercel.app");
         config.addAllowedMethod("GET");
         config.addAllowedMethod("PATCH");
         config.addAllowedMethod("POST");
