@@ -15,6 +15,8 @@ public class RegisterRequest {
     @Nonnull
     private String password;
     @Nullable
+    private String confirmPassword;
+    @Nullable
     private Gender gender;
     @Nullable
     private Integer age;

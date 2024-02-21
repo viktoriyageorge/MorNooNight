@@ -23,8 +23,8 @@ import bg.fmi.HappyNotes.repository.UserRepository;
 import bg.fmi.HappyNotes.service.AuthService;
 
 import java.time.LocalDateTime;
-import java.time.YearMonth;
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -37,7 +37,7 @@ import org.springframework.util.StringUtils;
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
-
+    private final Logger logger = Logger.getLogger(AuthServiceImpl.class.getName());
     private final TokenRepository tokenRepository;
     private final UserRepository userRepository;
     private final GratitudeRepository gratitudeRepository;
@@ -92,10 +92,15 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private String generateAndSaveToken(User user) {
-        String jwt = jwtService.generateToken(user);
-        Token token = Token.builder().user(user).token(jwt).tokenType(TokenType.BEARER).build();
-        tokenRepository.save(token);
-        return jwt;
+        try {
+            String jwt = jwtService.generateToken(user);
+            Token token = Token.builder().user(user).token(jwt).tokenType(TokenType.BEARER).build();
+            tokenRepository.save(token);
+            return jwt;
+        } catch (Exception e) {
+            logger.info(e.getMessage());
+        }
+        return null;
     }
 
     @Override
