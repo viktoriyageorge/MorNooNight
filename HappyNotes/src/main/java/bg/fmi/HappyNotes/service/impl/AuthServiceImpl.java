@@ -112,7 +112,7 @@ public class AuthServiceImpl implements AuthService {
     public Boolean validateToken(String token) {
         try {
             String username = jwtService.extractUsername(token);
-            return userRepository.findByUsername(username)
+            return username != null && userRepository.findByUsername(username)
                     .filter(user -> jwtService.isTokenValid(token, user))
                     .flatMap(user -> tokenRepository.findByToken(token).stream().findFirst())
                     .map(tokenEntity -> tokenEntity.getExpiredAt() == null)
