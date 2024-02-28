@@ -119,7 +119,11 @@ public class AuthServiceImpl implements AuthService {
             String username = jwtService.extractUsername(token);
             return username != null && userRepository.findByUsername(username)
                     .filter(user -> jwtService.isTokenValid(token, user))
-                    .flatMap(user -> tokenRepository.findByToken(token).stream().findFirst())
+                    .flatMap(user -> tokenRepository.findByToken(token)
+                            .stream()
+                            .filter(token1 -> jwtService.isTokenValid(token1.getToken(), user))
+                            .findFirst()
+                    )
                     .map(tokenEntity -> tokenEntity.getExpiredAt() == null)
                     .orElse(false);
         } catch (Exception e) {
@@ -128,7 +132,6 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private User createUser(RegisterRequest registerRequest) {
-        // Build the User entity from the registration request
         User user = User.builder()
                 .age(registerRequest.getAge())
                 .username(registerRequest.getUsername())
@@ -137,12 +140,9 @@ public class AuthServiceImpl implements AuthService {
                 .pin(StringUtils.hasText(registerRequest.getPin()) ?
                         passwordEncoder.encode(registerRequest.getPin()) : null)
                 .gender(registerRequest.getGender())
-                .enabled(true) // Assuming you want to enable the user upon registration
+                .enabled(true)
                 .build();
-
         user.setNotification(notificationRepository.save(Notification.builder().user(user).build()));
-        // Save the user (and by cascade, the notification) in a single operation
-        // Ensure your User entity is configured to cascade persist operations to the Notification entity
         return userRepository.save(user);
     }
 
