@@ -23,6 +23,7 @@ import bg.fmi.HappyNotes.repository.UserRepository;
 import bg.fmi.HappyNotes.service.AuthService;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -75,20 +76,28 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
+    @Transactional
     private String getValidTokenOrCreateNew(User user) {
-        Optional<Token> repositoryToken = tokenRepository.findByUserIdAndExpiredAtIsNull(user.getId()).stream().findFirst();
+        tokenRepository.findByUserIdAndExpiredAtIsNull(user.getId())
+                .stream()
+                .filter(token -> jwtService.isTokenExpired(token.getToken()))
+                .forEach(token -> {
+                    token.setExpiredAt(LocalDateTime.ofInstant(
+                            jwtService.extractExpiration(token.getToken()).toInstant(),
+                            ZoneId.systemDefault()));
+                    tokenRepository.save(token);
+                });
+
+        Optional<Token> repositoryToken = tokenRepository.findByUserIdAndExpiredAtIsNull(user.getId())
+                .stream()
+                .sorted()
+                .findFirst();
         if (repositoryToken.isPresent() && !jwtService.isTokenValid(repositoryToken.get().getToken(), user)) {
             tokenRepository.delete(repositoryToken.get());
             return repositoryToken.get().getToken();
         }
 
         return generateAndSaveToken(user);
-    }
-
-    private Optional<String> getValidTokenIfExists(User user) {
-        return tokenRepository.findByUserId(user.getId()).stream()
-                .filter(token -> token.getExpiredAt() != null)
-                .map(Token::getToken).findFirst();
     }
 
     private String generateAndSaveToken(User user) {
@@ -121,7 +130,7 @@ public class AuthServiceImpl implements AuthService {
                     .filter(user -> jwtService.isTokenValid(token, user))
                     .flatMap(user -> tokenRepository.findByToken(token)
                             .stream()
-                            .filter(token1 -> jwtService.isTokenValid(token1.getToken(), user))
+                            .filter(token1 -> jwtService.isTokenExpired(token1.getToken()))
                             .findFirst()
                     )
                     .map(tokenEntity -> tokenEntity.getExpiredAt() == null)

@@ -12,7 +12,8 @@ import org.springframework.stereotype.Repository;
 public interface HabitRepository extends JpaRepository<Habit, Integer> {
   List<Habit> findAllByUserId(Integer userId);
 
-  @Query(value = "SELECT * FROM habit WHERE user_id = :userId AND MONTH(`year_month`) = MONTH(:monthValue) AND YEAR(`year_month`) = YEAR(CURRENT_DATE)", nativeQuery = true)
+  @Query(value = "SELECT * FROM habit WHERE user_id = :userId AND MONTH(`year_month`) = MONTH(:monthValue) " +
+          "AND YEAR(`year_month`) = YEAR(CURRENT_DATE)", nativeQuery = true)
   List<Habit> findAllByUserIdDate(Integer userId, LocalDate monthValue);
 
   void deleteByUserIdAndAndId(Integer userId, Integer habitId);

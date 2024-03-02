@@ -15,6 +15,8 @@ public interface HabitTrackerRepository extends JpaRepository<HabitTracker, Inte
   List<Integer> findByIsCreatedByAdminFalse();
 
   @Modifying
-  @Query(value = "DELETE FROM habit_tracker WHERE is_created_by_admin = FALSE AND NOT EXISTS (SELECT 1 FROM habit WHERE habit.tracker_id = habit_tracker.id)", nativeQuery = true)
+  @Query(value = "DELETE FROM habit_tracker WHERE is_created_by_admin = FALSE " +
+          "AND NOT EXISTS (SELECT 1 FROM habit WHERE habit.tracker_id = habit_tracker.id)",
+          nativeQuery = true)
   void deleteUnreferencedHabitTrackers();
 }
