@@ -96,8 +96,7 @@ public class AuthServiceImpl implements AuthService {
         tokenRepository.findAll().stream()
                 .filter(token -> jwtService.isTokenExpired(token.getToken()))
                 .forEach(token -> {
-                    token.setExpiredAt(LocalDateTime.ofInstant(jwtService.extractExpiration(token.getToken()).toInstant(),
-                            ZoneId.systemDefault()));
+                    token.setExpiredAt(LocalDateTime.now());
                     tokenRepository.save(token);
                 });
     }
