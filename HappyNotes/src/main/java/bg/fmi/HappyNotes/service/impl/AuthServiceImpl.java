@@ -135,7 +135,7 @@ public class AuthServiceImpl implements AuthService {
                     .filter(user -> jwtService.isTokenValid(token, user))
                     .flatMap(user -> tokenRepository.findByToken(token)
                             .stream()
-                            .filter(token1 -> jwtService.isTokenExpired(token1.getToken()))
+                            .filter(token1 -> !jwtService.isTokenExpired(token1.getToken()))
                             .findFirst()
                     )
                     .map(tokenEntity -> tokenEntity.getExpiredAt() == null)
