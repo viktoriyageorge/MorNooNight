@@ -44,7 +44,8 @@ public class Token implements Comparable<Token> {
 
     @Override
     public int compareTo(Token o) {
-        return this.getExpiredAt().compareTo(o.getExpiredAt());
+        return this.getExpiredAt() == null || o.getExpiredAt() == null ? 0
+                : this.getExpiredAt().compareTo(o.getExpiredAt());
     }
 }
 
