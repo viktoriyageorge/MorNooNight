@@ -84,7 +84,9 @@ public class AuthServiceImpl implements AuthService {
                 .stream()
                 .sorted()
                 .findFirst();
-        if (repositoryToken.isPresent() && !jwtService.isTokenValid(repositoryToken.get().getToken(), user)) {
+
+        if (repositoryToken.isPresent() && (jwtService.isTokenExpired(repositoryToken.get().getToken())
+                || !jwtService.isTokenValid(repositoryToken.get().getToken(), user))) {
             tokenRepository.delete(repositoryToken.get());
             return repositoryToken.get().getToken();
         }
