@@ -78,15 +78,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Transactional
     private String getValidTokenOrCreateNew(User user) {
-        tokenRepository.findByUserIdAndExpiredAtIsNull(user.getId())
-                .stream()
-                .filter(token -> jwtService.isTokenExpired(token.getToken()))
-                .forEach(token -> {
-                    token.setExpiredAt(LocalDateTime.ofInstant(
-                            jwtService.extractExpiration(token.getToken()).toInstant(),
-                            ZoneId.systemDefault()));
-                    tokenRepository.save(token);
-                });
+        this.filterTokens();
 
         Optional<Token> repositoryToken = tokenRepository.findByUserIdAndExpiredAtIsNull(user.getId())
                 .stream()
@@ -98,6 +90,16 @@ public class AuthServiceImpl implements AuthService {
         }
 
         return generateAndSaveToken(user);
+    }
+
+    private void filterTokens() {
+        tokenRepository.findAll().stream()
+                .filter(token -> jwtService.isTokenExpired(token.getToken()))
+                .forEach(token -> {
+                    token.setExpiredAt(LocalDateTime.ofInstant(jwtService.extractExpiration(token.getToken()).toInstant(),
+                            ZoneId.systemDefault()));
+                    tokenRepository.save(token);
+                });
     }
 
     private String generateAndSaveToken(User user) {
@@ -123,8 +125,10 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Transactional
     public Boolean validateToken(String token) {
         try {
+            this.filterTokens();
             String username = jwtService.extractUsername(token);
             return username != null && userRepository.findByUsername(username)
                     .filter(user -> jwtService.isTokenValid(token, user))
