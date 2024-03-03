@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 @Tag(name = "Authentication Controller", description = "Authentication API, used to register and authenticate users.")
-@CrossOrigin(origins = "https://happy-notes-95ytmumzm-viktoriyageorges-projects.vercel.app")
+@CrossOrigin(origins = "https://happy-notes-rg1ownbp4-viktoriyageorges-projects.vercel.app")
 public class AuthController {
 
     private final AuthService authService;
