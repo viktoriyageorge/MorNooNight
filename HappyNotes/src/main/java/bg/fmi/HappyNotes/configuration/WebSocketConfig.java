@@ -16,7 +16,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .setAllowedOrigins("http://localhost:8102",
                         "http://192.168.0.103:8102",
                         "https://happy-notes-95ytmumzm-viktoriyageorges-projects.vercel.app",
-                        "https://happy-notes-rg1ownbp4-viktoriyageorges-projects.vercel.app")
+                        "https://happy-notes-qi0ksmusn-viktoriyageorges-projects.vercel.app")
                 .withSockJS();
     }
 
